@@ -1,3 +1,6 @@
 ﻿anthropic
 streamlit
 openai
+websockets
+numpy
+scipy
