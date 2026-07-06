@@ -6,182 +6,33 @@ st.set_page_config(page_title="Voice & Design", page_icon="🎙️", layout="wid
 
 st.markdown("""
 <style>
-/* Global */
 [data-testid="stAppViewContainer"] { background: #ffffff; }
 [data-testid="stSidebar"] { background: #0f0f1a; }
 [data-testid="stSidebar"] * { color: #ffffff !important; }
 [data-testid="stSidebar"] .stRadio label { color: #ffffff !important; }
-
-/* Hide default streamlit elements */
 #MainMenu, footer, header { visibility: hidden; }
 .block-container { padding-top: 2rem; max-width: 1200px; }
-
-/* Hero gradient text */
-.hero-title {
-    font-size: 3.5rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, #4F46E5, #06B6D4);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    line-height: 1.2;
-    margin-bottom: 1rem;
-}
-.hero-sub {
-    font-size: 1.2rem;
-    color: #6B7280;
-    margin-bottom: 2rem;
-    line-height: 1.6;
-}
-.hero-label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #6B7280;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-bottom: 0.5rem;
-}
-
-/* Persona cards */
-.persona-card {
-    background: #ffffff;
-    border: 1px solid #E5E7EB;
-    border-radius: 16px;
-    padding: 24px;
-    transition: all 0.2s;
-    cursor: pointer;
-    height: 100%;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-.persona-card:hover {
-    border-color: #4F46E5;
-    box-shadow: 0 8px 25px rgba(79,70,229,0.12);
-    transform: translateY(-2px);
-}
-.persona-icon {
-    font-size: 2.5rem;
-    margin-bottom: 12px;
-}
-.persona-name {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #111827;
-    margin-bottom: 4px;
-}
-.persona-company {
-    font-size: 0.8rem;
-    color: #9CA3AF;
-    margin-bottom: 8px;
-}
-.persona-desc {
-    font-size: 0.9rem;
-    color: #6B7280;
-    line-height: 1.5;
-    margin-bottom: 12px;
-}
-.difficulty-badge {
-    display: inline-block;
-    padding: 2px 10px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
+.hero-title { font-size: 3.5rem; font-weight: 800; background: linear-gradient(135deg, #4F46E5, #06B6D4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1.2; margin-bottom: 1rem; }
+.hero-sub { font-size: 1.2rem; color: #6B7280; margin-bottom: 2rem; line-height: 1.6; }
+.hero-label { font-size: 0.85rem; font-weight: 600; color: #6B7280; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
+.persona-card { background: #ffffff; border: 1px solid #E5E7EB; border-radius: 16px; padding: 24px; transition: all 0.2s; height: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.persona-card:hover { border-color: #4F46E5; box-shadow: 0 8px 25px rgba(79,70,229,0.12); transform: translateY(-2px); }
+.persona-icon { font-size: 2.5rem; margin-bottom: 12px; }
+.persona-name { font-size: 1.1rem; font-weight: 700; color: #111827; margin-bottom: 4px; }
+.persona-company { font-size: 0.8rem; color: #9CA3AF; margin-bottom: 8px; }
+.persona-desc { font-size: 0.9rem; color: #6B7280; line-height: 1.5; margin-bottom: 12px; }
+.difficulty-badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
 .diff-1 { background: #D1FAE5; color: #065F46; }
 .diff-2 { background: #DBEAFE; color: #1E40AF; }
 .diff-3 { background: #FEF3C7; color: #92400E; }
 .diff-4 { background: #FEE2E2; color: #991B1B; }
 .diff-5 { background: #EDE9FE; color: #5B21B6; }
-
-/* How it works cards */
-.step-card {
-    background: #F9FAFB;
-    border-radius: 16px;
-    padding: 24px;
-    text-align: center;
-    height: 100%;
-}
-.step-num {
-    width: 48px; height: 48px;
-    background: linear-gradient(135deg, #4F46E5, #06B6D4);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: 700;
-    font-size: 1.2rem;
-    margin: 0 auto 16px;
-}
-.step-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #111827;
-    margin-bottom: 8px;
-}
-.step-desc {
-    font-size: 0.85rem;
-    color: #6B7280;
-    line-height: 1.5;
-}
-
-/* Stats bar */
-.stats-bar {
-    background: linear-gradient(135deg, #4F46E5, #06B6D4);
-    border-radius: 16px;
-    padding: 24px 32px;
-    display: flex;
-    justify-content: space-around;
-    margin: 24px 0;
-}
-.stat-item { text-align: center; color: white; }
-.stat-num { font-size: 2rem; font-weight: 800; }
-.stat-label { font-size: 0.85rem; opacity: 0.85; }
-
-/* Section headers */
-.section-header {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #111827;
-    margin-bottom: 8px;
-}
-.section-sub {
-    font-size: 1rem;
-    color: #6B7280;
-    margin-bottom: 24px;
-}
-
-/* Chat styling */
-.hint-bubble {
-    background: #EEF2FF;
-    border-left: 3px solid #4F46E5;
-    padding: 8px 12px;
-    border-radius: 0 8px 8px 0;
-    font-size: 0.85rem;
-    color: #4338CA;
-    margin: 4px 0 12px 48px;
-}
-
-/* Buttons */
-.stButton button {
-    border-radius: 10px !important;
-    font-weight: 600 !important;
-    transition: all 0.2s !important;
-}
-.stButton button[kind="primary"] {
-    background: linear-gradient(135deg, #4F46E5, #06B6D4) !important;
-    border: none !important;
-}
-
-/* Score cards */
-.score-card {
-    background: #F9FAFB;
-    border-radius: 12px;
-    padding: 16px;
-    text-align: center;
-    border: 1px solid #E5E7EB;
-}
-.score-label { font-size: 0.8rem; color: #6B7280; margin-bottom: 4px; }
-.score-value { font-size: 1.8rem; font-weight: 800; color: #111827; }
+.step-card { background: #F9FAFB; border-radius: 16px; padding: 24px; text-align: center; height: 100%; }
+.section-header { font-size: 1.8rem; font-weight: 700; color: #111827; margin-bottom: 8px; }
+.section-sub { font-size: 1rem; color: #6B7280; margin-bottom: 24px; }
+.hint-bubble { background: #EEF2FF; border-left: 3px solid #4F46E5; padding: 8px 12px; border-radius: 0 8px 8px 0; font-size: 0.85rem; color: #4338CA; margin: 4px 0 12px 48px; }
+.stButton button { border-radius: 10px !important; font-weight: 600 !important; transition: all 0.2s !important; }
+.stButton button[kind="primary"] { background: linear-gradient(135deg, #4F46E5, #06B6D4) !important; border: none !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -289,10 +140,7 @@ function stopRecording(){
 
 VOICE_BTN_HTML = """
 <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:#F9FAFB;border-radius:12px;margin-bottom:10px;border:1px solid #E5E7EB;">
-  <button id="micBtn" onclick="toggleMic()"
-    style="width:52px;height:52px;border-radius:50%;border:2px solid #4F46E5;
-    background:white;font-size:22px;cursor:pointer;flex-shrink:0;
-    box-shadow:0 2px 8px rgba(79,70,229,0.2);transition:all 0.2s;">🎙️</button>
+  <button id="micBtn" onclick="toggleMic()" style="width:52px;height:52px;border-radius:50%;border:2px solid #4F46E5;background:white;font-size:22px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 8px rgba(79,70,229,0.2);transition:all 0.2s;">🎙️</button>
   <div>
     <div id="micStatus" style="font-size:13px;font-weight:600;color:#111827;">Click mic to record your voice</div>
     <div id="micHint" style="font-size:11px;color:#9CA3AF;margin-top:2px;">Your speech will be transcribed and sent to the sponsor automatically</div>
@@ -407,7 +255,16 @@ st.sidebar.markdown("""
 </div>
 """, unsafe_allow_html=True)
 st.sidebar.markdown("---")
-page = st.sidebar.radio("", ["🏠 Home","💬 Practice Session","📹 Video Practice","📈 My Progress","ℹ️ About"])
+
+# ── KEY FIX: Navigation with session state ────────
+PAGE_OPTIONS = ["🏠 Home","💬 Practice Session","📹 Video Practice","📈 My Progress","ℹ️ About"]
+if "current_page" not in st.session_state:
+    st.session_state["current_page"] = "🏠 Home"
+
+page = st.sidebar.radio("", PAGE_OPTIONS,
+    index=PAGE_OPTIONS.index(st.session_state["current_page"]))
+st.session_state["current_page"] = page
+
 st.sidebar.markdown("---")
 best = st.session_state.get("best_score",0)
 st.sidebar.markdown(f"""
@@ -420,6 +277,12 @@ st.sidebar.markdown(f"""
 if best < 80:
     st.sidebar.progress(min(best/80,1.0))
 
+def go_to(page_name, persona_id=None):
+    st.session_state["current_page"] = page_name
+    if persona_id:
+        st.session_state["pid"] = persona_id
+    st.rerun()
+
 # ── HOME ─────────────────────────────────────────
 if page == "🏠 Home":
     col1, col2 = st.columns([3,2])
@@ -430,11 +293,10 @@ if page == "🏠 Home":
         c1,c2,c3 = st.columns(3)
         with c1:
             if st.button("💬 Start Practicing", use_container_width=True, type="primary"):
-                st.session_state["pid"]="mentor"
-                st.rerun()
+                go_to("💬 Practice Session", "mentor")
         with c2:
             if st.button("📹 Video Practice", use_container_width=True):
-                st.rerun()
+                go_to("📹 Video Practice")
     with col2:
         st.markdown("""
 <div style="background:linear-gradient(135deg,#EEF2FF,#E0F2FE);border-radius:20px;padding:24px;margin-top:16px;">
@@ -493,8 +355,7 @@ if page == "🏠 Home":
 </div>
 """, unsafe_allow_html=True)
             if st.button("Practice →", key=f"h_{pid}", use_container_width=True):
-                st.session_state["pid"]=pid
-                st.rerun()
+                go_to("💬 Practice Session", pid)
 
     st.markdown("---")
     st.markdown("""
@@ -504,8 +365,7 @@ if page == "🏠 Home":
 </div>
 """, unsafe_allow_html=True)
     if st.button("🌱 Start with Mentor Sponsor", use_container_width=True, type="primary"):
-        st.session_state["pid"]="mentor"
-        st.rerun()
+        go_to("💬 Practice Session", "mentor")
 
 # ── VIDEO PRACTICE ────────────────────────────────
 elif page == "📹 Video Practice":
