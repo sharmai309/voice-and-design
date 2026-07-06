@@ -1,8 +1,6 @@
 ﻿import streamlit as st
-import os, json, base64, cv2, tempfile, time
+import os, json, base64, time
 from anthropic import Anthropic
-from PIL import Image
-import numpy as np
 
 st.set_page_config(page_title="Voice & Design", page_icon="🎙️", layout="wide")
 
@@ -33,25 +31,188 @@ CONVERSATION:
 
 HINT_PROMPT = "You are a real-time coach. Give ONE short hint (max 15 words) about what the student just said. Format: emoji + hint. Student said: "
 
-FACIAL_PROMPT = """You are an expert communication coach analyzing a student during a sponsor meeting practice.
-Look at this image carefully and evaluate:
+FACIAL_PROMPT = """You are an expert communication coach analyzing a student during a sponsor meeting practice session.
+Look at this image carefully and evaluate their body language and presentation:
 
-1. EYE CONTACT (0-25): Are they looking at the camera/screen? Sustained eye contact shows engagement.
-2. CONFIDENCE (0-25): Posture, facial expression, does the person look confident or nervous?
-3. ENGAGEMENT (0-25): Do they look interested and present, or distracted/disengaged?
-4. PROFESSIONALISM (0-25): Is their appearance and setting appropriate for a sponsor meeting?
+1. EYE CONTACT (0-25): Are they looking at the camera directly? Sustained eye contact shows confidence and engagement.
+2. CONFIDENCE (0-25): Posture, facial expression, do they look confident or nervous/anxious?
+3. ENGAGEMENT (0-25): Do they look interested and present, or distracted/bored/disengaged?
+4. PROFESSIONALISM (0-25): Is their appearance, background, and setting appropriate for a professional sponsor meeting?
 
-Return ONLY this JSON:
+Be specific and constructive. Reference exactly what you see in the image.
+
+Return ONLY this JSON, no other text:
 {
   "eye_contact": 0,
   "confidence": 0,
   "engagement": 0,
   "professionalism": 0,
   "total": 0,
-  "observations": ["observation 1", "observation 2", "observation 3"],
-  "improvements": ["improvement 1", "improvement 2"],
-  "summary": "2-3 sentence overall body language assessment"
+  "observations": ["specific observation 1", "specific observation 2", "specific observation 3"],
+  "improvements": ["specific actionable improvement 1", "specific actionable improvement 2"],
+  "quick_wins": ["quick win 1", "quick win 2"],
+  "summary": "2-3 sentence overall body language assessment with specific details from the image"
 }"""
+
+VIDEO_HTML = """
+<div style="font-family:sans-serif;padding:8px 0;">
+  <video id="videoEl" autoplay muted playsinline style="width:100%;border-radius:12px;background:#000;max-height:400px;"></video>
+  <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
+    <button id="startBtn" onclick="startRecording()" style="padding:10px 20px;border-radius:8px;border:none;background:#1D9E75;color:white;font-size:14px;font-weight:500;cursor:pointer;">▶️ Start Recording</button>
+    <button id="stopBtn" onclick="stopRecording()" disabled style="padding:10px 20px;border-radius:8px;border:none;background:#D85A30;color:white;font-size:14px;font-weight:500;cursor:pointer;opacity:0.5;">⏹️ Stop Recording</button>
+    <span id="timer" style="padding:10px;font-size:14px;color:#666;align-self:center;"></span>
+  </div>
+  <div id="status" style="margin-top:8px;font-size:13px;color:#666;"></div>
+  <div id="previewDiv" style="margin-top:12px;display:none;">
+    <p style="font-size:13px;font-weight:500;margin-bottom:6px;">📹 Your recorded video:</p>
+    <video id="previewEl" controls style="width:100%;border-radius:8px;max-height:300px;"></video>
+    <a id="downloadLink" download="interview-practice.webm" style="display:inline-block;margin-top:8px;padding:8px 16px;background:#185FA5;color:white;border-radius:6px;text-decoration:none;font-size:13px;">⬇️ Download Video</a>
+  </div>
+</div>
+<script>
+let mediaRecorder, stream, chunks=[], timerInterval, seconds=0;
+async function startRecording(){
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
+    document.getElementById("videoEl").srcObject = stream;
+    mediaRecorder = new MediaRecorder(stream);
+    chunks = [];
+    mediaRecorder.ondataavailable = e => { if(e.data.size>0) chunks.push(e.data); };
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(chunks, {type:"video/webm"});
+      const url = URL.createObjectURL(blob);
+      document.getElementById("previewEl").src = url;
+      document.getElementById("downloadLink").href = url;
+      document.getElementById("previewDiv").style.display = "block";
+      document.getElementById("status").textContent = "✅ Recording saved! Download it or take a snapshot below for AI analysis.";
+    };
+    mediaRecorder.start(1000);
+    seconds = 0;
+    timerInterval = setInterval(() => {
+      seconds++;
+      const m = Math.floor(seconds/60).toString().padStart(2,"0");
+      const s = (seconds%60).toString().padStart(2,"0");
+      document.getElementById("timer").textContent = "🔴 " + m + ":" + s;
+    }, 1000);
+    document.getElementById("startBtn").disabled = true;
+    document.getElementById("startBtn").style.opacity = "0.5";
+    document.getElementById("stopBtn").disabled = false;
+    document.getElementById("stopBtn").style.opacity = "1";
+    document.getElementById("status").textContent = "🔴 Recording in progress...";
+  } catch(e) {
+    document.getElementById("status").textContent = "❌ Camera access denied. Please allow camera permission.";
+  }
+}
+function stopRecording(){
+  if(mediaRecorder && mediaRecorder.state !== "inactive"){
+    mediaRecorder.stop();
+    stream.getTracks().forEach(t => t.stop());
+    clearInterval(timerInterval);
+    document.getElementById("timer").textContent = "";
+    document.getElementById("startBtn").disabled = false;
+    document.getElementById("startBtn").style.opacity = "1";
+    document.getElementById("stopBtn").disabled = true;
+    document.getElementById("stopBtn").style.opacity = "0.5";
+  }
+}
+</script>
+"""
+
+VOICE_BTN_HTML = """
+<div style="display:flex;align-items:center;gap:12px;padding:12px;background:#f8f9fa;border-radius:12px;margin-bottom:8px;border:1px solid #e9ecef;">
+  <button id="micBtn" onclick="toggleMic()"
+    style="width:52px;height:52px;border-radius:50%;border:2px solid #1D9E75;
+    background:white;font-size:22px;cursor:pointer;flex-shrink:0;transition:all 0.2s;">🎙️</button>
+  <div>
+    <div id="micStatus" style="font-size:13px;font-weight:500;color:#333;">🎙️ Click to record your voice</div>
+    <div id="micHint" style="font-size:11px;color:#888;margin-top:2px;">Speak clearly, then click stop — your voice will be sent to the sponsor</div>
+  </div>
+</div>
+<script>
+let recorder, audioChunks=[], recording=false;
+async function toggleMic(){
+  if(!recording){
+    try{
+      const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+      recorder = new MediaRecorder(stream);
+      audioChunks = [];
+      recorder.ondataavailable = e => audioChunks.push(e.data);
+      recorder.onstop = () => {
+        const blob = new Blob(audioChunks,{type:"audio/webm"});
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          window.parent.postMessage({type:"voice",data:reader.result.split(",")[1]},"*");
+          document.getElementById("micStatus").textContent = "⏳ Processing your voice...";
+          document.getElementById("micHint").textContent = "Please wait...";
+        };
+        reader.readAsDataURL(blob);
+        stream.getTracks().forEach(t=>t.stop());
+      };
+      recorder.start();
+      recording=true;
+      document.getElementById("micBtn").style.background="#D85A30";
+      document.getElementById("micBtn").style.borderColor="#D85A30";
+      document.getElementById("micBtn").textContent="⏹️";
+      document.getElementById("micStatus").textContent="🔴 Recording... click to stop";
+      document.getElementById("micHint").textContent="Speak clearly to the sponsor";
+    } catch(e) {
+      document.getElementById("micStatus").textContent="❌ Microphone access denied — check browser permissions";
+    }
+  } else {
+    recorder.stop();
+    recording=false;
+    document.getElementById("micBtn").style.background="white";
+    document.getElementById("micBtn").style.borderColor="#1D9E75";
+    document.getElementById("micBtn").textContent="🎙️";
+    document.getElementById("micStatus").textContent="🎙️ Click to record your voice";
+    document.getElementById("micHint").textContent="Speak clearly, then click stop";
+  }
+}
+</script>
+"""
+
+def transcribe_audio(audio_b64):
+    try:
+        from openai import OpenAI
+        import tempfile
+        oai = OpenAI(api_key=st.secrets.get("OPENAI_API_KEY",""))
+        audio_bytes = base64.b64decode(audio_b64)
+        with tempfile.NamedTemporaryFile(suffix=".webm", delete=False) as f:
+            f.write(audio_bytes)
+            fname = f.name
+        with open(fname, "rb") as f:
+            result = oai.audio.transcriptions.create(model="whisper-1", file=f)
+        return result.text
+    except Exception as e:
+        return None
+
+def analyze_facial_expression(image_bytes):
+    try:
+        b64 = base64.standard_b64encode(image_bytes).decode("utf-8")
+        r = get_client().messages.create(
+            model="claude-sonnet-4-6", max_tokens=800,
+            messages=[{"role":"user","content":[
+                {"type":"image","source":{"type":"base64","media_type":"image/jpeg","data":b64}},
+                {"type":"text","text":FACIAL_PROMPT}
+            ]}]
+        )
+        raw = r.content[0].text.strip()
+        if "```" in raw:
+            raw = raw.split("```")[1]
+            if raw.startswith("json"): raw = raw[4:]
+        return json.loads(raw.strip())
+    except Exception as e:
+        st.error(f"Analysis error: {e}")
+        return None
+
+def speak_text(text):
+    try:
+        from openai import OpenAI
+        oai = OpenAI(api_key=st.secrets.get("OPENAI_API_KEY",""))
+        resp = oai.audio.speech.create(model="tts-1", voice="nova", input=text[:500])
+        b64 = base64.b64encode(resp.content).decode()
+        st.markdown(f'<audio autoplay><source src="data:audio/mp3;base64,{b64}" type="audio/mp3"></audio>', unsafe_allow_html=True)
+    except: pass
 
 def get_hint(msg):
     try:
@@ -69,77 +230,6 @@ def do_score(msgs, pname):
         raw = raw.split("```")[1]
         if raw.startswith("json"): raw = raw[4:]
     return json.loads(raw.strip())
-
-def analyze_facial_expression(image_bytes):
-    try:
-        b64 = base64.standard_b64encode(image_bytes).decode("utf-8")
-        r = get_client().messages.create(
-            model="claude-sonnet-4-6", max_tokens=600,
-            messages=[{"role":"user","content":[
-                {"type":"image","source":{"type":"base64","media_type":"image/jpeg","data":b64}},
-                {"type":"text","text":FACIAL_PROMPT}
-            ]}]
-        )
-        raw = r.content[0].text.strip()
-        if "```" in raw:
-            raw = raw.split("```")[1]
-            if raw.startswith("json"): raw = raw[4:]
-        return json.loads(raw.strip())
-    except Exception as e:
-        return None
-
-def speak_text(text):
-    try:
-        from openai import OpenAI
-        oai = OpenAI(api_key=st.secrets.get("OPENAI_API_KEY",""))
-        resp = oai.audio.speech.create(model="tts-1", voice="nova", input=text[:500])
-        b64 = base64.b64encode(resp.content).decode()
-        st.markdown(f'<audio autoplay><source src="data:audio/mp3;base64,{b64}" type="audio/mp3"></audio>', unsafe_allow_html=True)
-    except: pass
-
-VOICE_HTML = """
-<div style="background:var(--surface-1,#f8f9fa);border:1px solid #dee2e6;border-radius:12px;padding:16px;margin-bottom:8px;">
-  <div style="display:flex;align-items:center;gap:12px;">
-    <button id="micBtn" onclick="toggleRecording()" style="width:48px;height:48px;border-radius:50%;border:none;background:#1D9E75;color:white;font-size:20px;cursor:pointer;">🎙️</button>
-    <div>
-      <div style="font-weight:500;font-size:14px;" id="micStatus">Click mic to speak</div>
-      <div style="font-size:12px;color:gray;" id="transcript"></div>
-    </div>
-  </div>
-</div>
-<script>
-let mediaRecorder, audioChunks=[], isRecording=false;
-async function toggleRecording(){
-  if(!isRecording){
-    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-    mediaRecorder=new MediaRecorder(stream);
-    audioChunks=[];
-    mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
-    mediaRecorder.onstop=async()=>{
-      const blob=new Blob(audioChunks,{type:"audio/webm"});
-      const reader=new FileReader();
-      reader.onloadend=()=>{
-        const b64=reader.result.split(",")[1];
-        window.parent.postMessage({type:"audio",data:b64},"*");
-        document.getElementById("transcript").textContent="Processing...";
-      };
-      reader.readAsDataURL(blob);
-    };
-    mediaRecorder.start();
-    isRecording=true;
-    document.getElementById("micBtn").style.background="#D85A30";
-    document.getElementById("micBtn").textContent="⏹️";
-    document.getElementById("micStatus").textContent="Recording... click to stop";
-  } else {
-    mediaRecorder.stop();
-    isRecording=false;
-    document.getElementById("micBtn").style.background="#1D9E75";
-    document.getElementById("micBtn").textContent="🎙️";
-    document.getElementById("micStatus").textContent="Click mic to speak";
-  }
-}
-</script>
-"""
 
 st.sidebar.title("🎙️ Voice & Design")
 st.sidebar.markdown("---")
@@ -173,11 +263,11 @@ if page == "🏠 Home":
     with c2:
         with st.container(border=True):
             st.markdown("### 2️⃣")
-            st.markdown("**Speak or type** — sponsor responds in character")
+            st.markdown("**Practice** — type or speak to your sponsor")
     with c3:
         with st.container(border=True):
             st.markdown("### 3️⃣")
-            st.markdown("**Record video** — AI analyzes your facial expressions")
+            st.markdown("**Record video** — AI analyzes your body language")
     with c4:
         with st.container(border=True):
             st.markdown("### 4️⃣")
@@ -201,99 +291,96 @@ if page == "🏠 Home":
 
 elif page == "📹 Video Practice":
     st.title("📹 Video Practice")
-    st.markdown("Record yourself during practice and get AI feedback on your body language.")
+    st.markdown("Record your interview practice session, then get AI feedback on your body language.")
     st.markdown("---")
-
     names = {v["name"]:k for k,v in PERSONAS.items()}
     default = st.session_state.get("pid","mentor")
     sel = st.selectbox("Choose your sponsor",list(names.keys()),
         index=list(names.keys()).index(PERSONAS[default]["name"]))
     pid = names[sel]
     p = PERSONAS[pid]
-
     st.markdown("---")
-    st.markdown("### 📸 Step 1 — Take a snapshot for analysis")
-    st.info("💡 Tip: Sit upright, look at your camera, good lighting. Then click the button below.")
-
-    img_file = st.camera_input("📷 Take a photo to analyze your body language")
-
-    if img_file:
-        col1, col2 = st.columns([1,1])
-        with col1:
+    col1, col2 = st.columns([3,2])
+    with col1:
+        st.markdown("### 🎬 Step 1 — Record Your Session")
+        st.info("💡 Tips: Look at camera, good lighting, sit upright, professional background")
+        st.components.v1.html(VIDEO_HTML, height=520)
+    with col2:
+        st.markdown("### 📸 Step 2 — Take Snapshot for Analysis")
+        st.markdown("Take a photo during or after recording for AI facial expression analysis:")
+        img_file = st.camera_input("📷 Snapshot")
+        if img_file:
             st.image(img_file, caption="Your snapshot", use_container_width=True)
-
-        with col2:
-            if st.button("🤖 Analyze My Body Language", type="primary", use_container_width=True):
-                with st.spinner("Claude is analyzing your facial expressions and body language..."):
-                    image_bytes = img_file.getvalue()
-                    result = analyze_facial_expression(image_bytes)
-
-                if result:
-                    st.session_state["facial_result"] = result
-                    st.success("Analysis complete!")
-                else:
-                    st.error("Analysis failed — check your API key.")
-
+            st.session_state["snapshot"] = img_file.getvalue()
+    st.markdown("---")
+    if st.session_state.get("snapshot"):
+        if st.button("🤖 Give Analysis for Facial Expression", type="primary", use_container_width=True):
+            with st.spinner("🔍 Claude is analyzing your facial expressions, eye contact, and body language..."):
+                result = analyze_facial_expression(st.session_state["snapshot"])
+            if result:
+                st.session_state["facial_result"] = result
+                st.session_state["facial_timestamp"] = time.strftime("%Y-%m-%d %H:%M")
+                st.rerun()
+            else:
+                st.error("Analysis failed — make sure your Anthropic API key is set correctly.")
+    else:
+        st.info("👆 Take a snapshot above to enable the facial expression analysis button.")
     if st.session_state.get("facial_result"):
         result = st.session_state["facial_result"]
         st.markdown("---")
-        st.markdown("## 😊 Body Language Report")
-
+        st.markdown("## 😊 Facial Expression & Body Language Report")
+        st.caption(f"Analyzed at: {st.session_state.get('facial_timestamp','')}")
         total = result.get("total", 0)
         color = "green" if total>=80 else "orange" if total>=60 else "red"
         st.markdown(f"### Body Language Score: :{color}[{total}/100]")
         st.progress(total/100)
-
+        if total >= 80: st.success("✅ Excellent body language! You look confident and professional.")
+        elif total >= 60: st.warning("⚠️ Good effort! A few tweaks will make you look more confident.")
+        else: st.error("❌ Your body language needs work before the real meeting.")
         st.markdown("---")
         c1,c2,c3,c4 = st.columns(4)
-        c1.metric("👁️ Eye Contact", f"{result.get('eye_contact',0)}/25")
-        c2.metric("💪 Confidence", f"{result.get('confidence',0)}/25")
-        c3.metric("🎯 Engagement", f"{result.get('engagement',0)}/25")
-        c4.metric("👔 Professionalism", f"{result.get('professionalism',0)}/25")
-
+        ec = result.get("eye_contact",0)
+        cf = result.get("confidence",0)
+        en = result.get("engagement",0)
+        pr = result.get("professionalism",0)
+        c1.metric("👁️ Eye Contact", f"{ec}/25", delta="Good" if ec>=20 else "Needs work")
+        c2.metric("💪 Confidence", f"{cf}/25", delta="Good" if cf>=20 else "Needs work")
+        c3.metric("🎯 Engagement", f"{en}/25", delta="Good" if en>=20 else "Needs work")
+        c4.metric("👔 Professionalism", f"{pr}/25", delta="Good" if pr>=20 else "Needs work")
         st.markdown("---")
         col1, col2 = st.columns(2)
         with col1:
             st.markdown("#### ✅ What You Did Well")
-            for obs in result.get("observations", []):
-                st.success(obs)
+            for obs in result.get("observations", []): st.success(obs)
+            st.markdown("#### ⚡ Quick Wins")
+            for qw in result.get("quick_wins", []): st.info(qw)
         with col2:
             st.markdown("#### ⚠️ What To Improve")
-            for imp in result.get("improvements", []):
-                st.warning(imp)
-
+            for imp in result.get("improvements", []): st.warning(imp)
+            st.markdown("#### 💡 Specific Tips")
+            if ec < 20: st.markdown("**👁️ Eye contact:** Look directly at your camera lens, not at your own face on screen.")
+            if cf < 20: st.markdown("**💪 Confidence:** Sit up straight, shoulders back. Take a slow breath before speaking.")
+            if en < 20: st.markdown("**🎯 Engagement:** Nod occasionally, lean slightly forward, smile naturally.")
+            if pr < 20: st.markdown("**👔 Professionalism:** Use a clean background, good front lighting, dress professionally.")
         st.markdown("---")
-        st.info(f"**Overall:** {result.get('summary','')}")
-
+        st.info(f"**Overall Assessment:** {result.get('summary','')}")
         st.markdown("---")
-        st.markdown("### 💡 Quick Tips Based On Your Analysis")
-        tips = {
-            "eye_contact": ("👁️ Eye Contact","Look directly at your webcam — not at your own face on screen. Put a sticky note arrow pointing at the camera lens."),
-            "confidence": ("💪 Confidence","Sit up straight, shoulders back. Take a deep breath before speaking. Speak slowly and pause between points."),
-            "engagement": ("🎯 Engagement","Nod occasionally when the sponsor speaks. Lean slightly forward to show interest. Smile naturally."),
-            "professionalism": ("👔 Professionalism","Use a clean, simple background. Good lighting from the front. Dress as you would for the real meeting.")
-        }
-        for key,(title,tip) in tips.items():
-            score = result.get(key,0)
-            if score < 20:
-                with st.expander(f"🔴 Improve: {title} ({score}/25)"):
-                    st.markdown(tip)
-            elif score < 22:
-                with st.expander(f"🟡 Refine: {title} ({score}/25)"):
-                    st.markdown(tip)
-
-        st.markdown("---")
-        st.markdown("### 📥 Save Your Results")
-        if "video_history" not in st.session_state:
-            st.session_state["video_history"] = []
-        if st.button("💾 Save This Analysis To My Progress"):
-            st.session_state["video_history"].append({
-                "persona": p["name"],
-                "score": total,
-                "summary": result.get("summary",""),
-                "timestamp": time.strftime("%Y-%m-%d %H:%M")
-            })
-            st.success("Saved! Check My Progress page.")
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("💾 Save Analysis To My Progress", use_container_width=True):
+                if "video_history" not in st.session_state: st.session_state["video_history"] = []
+                st.session_state["video_history"].append({
+                    "persona": p["name"], "score": total, "eye_contact": ec,
+                    "confidence": cf, "engagement": en, "professionalism": pr,
+                    "summary": result.get("summary",""),
+                    "timestamp": st.session_state.get("facial_timestamp","")
+                })
+                st.success("✅ Saved to My Progress!")
+        with col2:
+            if st.button("🔄 Analyze Again", use_container_width=True):
+                st.session_state["facial_result"] = None
+                st.session_state["snapshot"] = None
+                st.rerun()
 
 elif page == "💬 Practice Session":
     st.title("💬 Practice Session")
@@ -303,7 +390,6 @@ elif page == "💬 Practice Session":
         index=list(names.keys()).index(PERSONAS[default]["name"]))
     pid = names[sel]
     p = PERSONAS[pid]
-
     col1,col2 = st.columns([3,1])
     with col1:
         with st.expander(f"{p['icon']} About {p['name']} — {p['company']}"):
@@ -311,16 +397,15 @@ elif page == "💬 Practice Session":
             st.write(p["desc"])
     with col2:
         voice_on = st.toggle("🔊 Sponsor voice", value=False)
-
     st.markdown("---")
     mkey,hkey = f"m_{pid}",f"h_{pid}"
     if mkey not in st.session_state: st.session_state[mkey]=[]
     if hkey not in st.session_state: st.session_state[hkey]=[]
     if "scored" not in st.session_state: st.session_state["scored"]=False
     if "result" not in st.session_state: st.session_state["result"]=None
+    if "pending_voice" not in st.session_state: st.session_state["pending_voice"]=None
     msgs = st.session_state[mkey]
     hints = st.session_state[hkey]
-
     c1,c2 = st.columns([1,4])
     with c1:
         if st.button("🔄 New Session"):
@@ -328,11 +413,11 @@ elif page == "💬 Practice Session":
             st.session_state[hkey]=[]
             st.session_state["scored"]=False
             st.session_state["result"]=None
+            st.session_state["pending_voice"]=None
             st.rerun()
     with c2:
         turns = sum(1 for m in msgs if m["role"]=="user")
         st.caption(f"💬 {turns} responses — {'ready to score!' if turns>=3 else f'need {3-turns} more to unlock scoring'}")
-
     if not msgs:
         with st.spinner(f"{p['icon']} Joining the call..."):
             r = get_client().messages.create(model="claude-sonnet-4-6",max_tokens=200,
@@ -341,7 +426,6 @@ elif page == "💬 Practice Session":
             msgs.append({"role":"assistant","content":opening})
             st.session_state[mkey]=msgs
             if voice_on: speak_text(opening)
-
     col_chat,col_side = st.columns([3,1])
     with col_chat:
         for i,m in enumerate(msgs):
@@ -351,7 +435,6 @@ elif page == "💬 Practice Session":
                 hidx = sum(1 for msg in msgs[:i+1] if msg["role"]=="user")-1
                 if hidx < len(hints) and hints[hidx]:
                     st.caption(f"💡 *{hints[hidx]}*")
-
     with col_side:
         st.markdown("### 📊 Live Stats")
         with st.container(border=True):
@@ -364,18 +447,38 @@ elif page == "💬 Practice Session":
         if hints:
             st.markdown("### 💡 Recent Hints")
             for h in hints[-3:]: st.info(h)
-        st.markdown("---")
-        st.markdown("### 📹 Body Language")
-        if st.button("📸 Analyze Me Now", use_container_width=True):
-            st.session_state["go_to_video"] = True
-            st.info("Go to 📹 Video Practice page!")
 
     if not st.session_state["scored"]:
         st.markdown("---")
-        st.markdown("#### 🎙️ Voice Input")
-        st.components.v1.html(VOICE_HTML, height=100)
-        st.markdown("#### ✍️ Or type your response")
-        if prompt := st.chat_input("Type your message..."):
+        st.markdown("#### 🎙️ Record Your Voice")
+        st.components.v1.html(VOICE_BTN_HTML, height=90)
+
+        if st.session_state.get("pending_voice"):
+            audio_b64 = st.session_state["pending_voice"]
+            st.session_state["pending_voice"] = None
+            with st.spinner("🎙️ Transcribing your voice..."):
+                transcript = transcribe_audio(audio_b64)
+            if transcript:
+                st.info(f"🎙️ You said: *{transcript}*")
+                hint = get_hint(transcript)
+                hints.append(hint)
+                st.session_state[hkey]=hints
+                msgs.append({"role":"user","content":transcript})
+                st.session_state[mkey]=msgs
+                with st.chat_message("assistant",avatar=p["icon"]):
+                    with st.spinner("Responding..."):
+                        r = get_client().messages.create(model="claude-sonnet-4-6",max_tokens=300,
+                            system=p["prompt"],messages=msgs)
+                        reply = r.content[0].text
+                        msgs.append({"role":"assistant","content":reply})
+                        st.session_state[mkey]=msgs
+                        if voice_on: speak_text(reply)
+                st.rerun()
+            else:
+                st.warning("Could not transcribe — check your OpenAI API key or try again.")
+
+        st.markdown("#### ✍️ Or type your message")
+        if prompt := st.chat_input("Type your message to the sponsor..."):
             hint = get_hint(prompt)
             hints.append(hint)
             st.session_state[hkey]=hints
@@ -422,19 +525,13 @@ elif page == "💬 Practice Session":
         c2.metric("Communication",f"{res['communication']}/25")
         c3.metric("Meeting Mgmt",f"{res['meeting_management']}/25")
         c4.metric("Relationship",f"{res['relationship_building']}/25")
-
         if st.session_state.get("facial_result"):
             st.markdown("---")
-            st.markdown("### 😊 Combined Score (Content + Body Language)")
-            content_score = total
-            body_score = st.session_state["facial_result"].get("total",0)
-            combined = round((content_score + body_score) / 2)
+            st.markdown("### 🎯 Combined Score")
+            body = st.session_state["facial_result"].get("total",0)
+            combined = round((total+body)/2)
             color2 = "green" if combined>=80 else "orange" if combined>=60 else "red"
-            st.markdown(f"### Combined: :{color2}[{combined}/100]")
-            c1,c2 = st.columns(2)
-            c1.metric("Content Score", f"{content_score}/100")
-            c2.metric("Body Language", f"{body_score}/100")
-
+            st.markdown(f"**Content:** {total}/100 | **Body Language:** {body}/100 | **Combined: :{color2}[{combined}/100]**")
         cl,cr = st.columns(2)
         with cl:
             st.markdown("#### ✅ Strengths")
@@ -459,7 +556,7 @@ elif page == "📈 My Progress":
     history = st.session_state.get("history",[])
     video_history = st.session_state.get("video_history",[])
     if not history and not video_history:
-        st.info("No sessions yet! Go to Practice Session to get started.")
+        st.info("No sessions yet! Go to Practice Session or Video Practice to get started.")
     else:
         if history:
             best = st.session_state.get("best_score",0)
@@ -475,7 +572,7 @@ elif page == "📈 My Progress":
             if best>=80: st.success("✅ CERTIFIED — Ready for your real sponsor meeting!")
             else: st.warning(f"Need {80-best} more points. Best: {best}/100")
             st.markdown("---")
-            st.markdown("### 📋 Session History")
+            st.markdown("### 📋 Practice Session History")
             for i,h in enumerate(reversed(history),1):
                 with st.container(border=True):
                     c1,c2,c3,c4 = st.columns([2,2,2,2])
@@ -489,10 +586,13 @@ elif page == "📈 My Progress":
             st.markdown("### 📹 Video Analysis History")
             for v in reversed(video_history):
                 with st.container(border=True):
-                    c1,c2,c3 = st.columns([2,2,3])
+                    c1,c2,c3,c4,c5 = st.columns([2,1,1,1,1])
                     c1.write(f"**{v['timestamp']}**")
-                    c2.write(f"Body language: **{v['score']}/100**")
-                    c3.write(v['summary'])
+                    c2.metric("Total",f"{v['score']}/100")
+                    c3.metric("👁️",f"{v.get('eye_contact',0)}/25")
+                    c4.metric("💪",f"{v.get('confidence',0)}/25")
+                    c5.metric("🎯",f"{v.get('engagement',0)}/25")
+                    st.caption(v.get('summary',''))
 
 elif page == "ℹ️ About":
     st.title("ℹ️ About Voice & Design")
@@ -502,16 +602,17 @@ elif page == "ℹ️ About":
 AI-powered Yoodli-style sponsor meeting simulator for UChicago ADS Capstone students.
 
 ### Features
-- 🎙️ Speak to your sponsor — Whisper transcribes your voice
-- 🔊 Hear sponsor respond — OpenAI TTS voice
-- 📹 Video practice — AI analyzes facial expressions
-- 👁️ Eye contact + confidence + engagement scores
+- 💬 Text chat with 5 AI sponsor personas
+- 🎙️ Voice record button — speak to your sponsor
+- 🔊 Sponsor speaks back with OpenAI TTS
+- 📹 Record your interview practice session
+- 😊 AI analyzes facial expressions and body language
 - 💡 Live coaching hints after every message
-- 📊 Combined content + body language score
+- 📊 Combined content + body language score report
 - 🏆 Get certified meeting-ready at 80+
 
 ### Tech Stack
-- Streamlit · Claude API · OpenAI Whisper · OpenAI TTS · Claude Vision
+- Streamlit · Claude API · OpenAI Whisper · OpenAI TTS · Claude Vision API
 
 ### Built For
 UChicago Master of Applied Data Science — Capstone Program
