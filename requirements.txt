@@ -6,3 +6,11 @@ pillow
 streamlit-webrtc
 aiortc
 numpy
+streamlit-webrtc
+streamlit-autorefresh
+av
+opencv-python-headless
+streamlit-webrtc
+streamlit-autorefresh
+av
+opencv-python-headless
