@@ -4,37 +4,8 @@ from anthropic import Anthropic
 
 st.set_page_config(page_title="Voice & Design", page_icon="🎙️", layout="wide")
 
-st.markdown("""
-<style>
-[data-testid="stAppViewContainer"] { background: #ffffff; }
-[data-testid="stSidebar"] { background: #0f0f1a; }
-[data-testid="stSidebar"] * { color: #ffffff !important; }
-[data-testid="stSidebar"] .stRadio label { color: #ffffff !important; }
-#MainMenu, footer, header { visibility: hidden; }
-.block-container { padding-top: 2rem; max-width: 1200px; }
-.hero-title { font-size: 3.5rem; font-weight: 800; background: linear-gradient(135deg, #4F46E5, #06B6D4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1.2; margin-bottom: 1rem; }
-.hero-sub { font-size: 1.2rem; color: #6B7280; margin-bottom: 2rem; line-height: 1.6; }
-.hero-label { font-size: 0.85rem; font-weight: 600; color: #6B7280; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
-.persona-card { background: #ffffff; border: 1px solid #E5E7EB; border-radius: 16px; padding: 24px; transition: all 0.2s; height: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-.persona-card:hover { border-color: #4F46E5; box-shadow: 0 8px 25px rgba(79,70,229,0.12); transform: translateY(-2px); }
-.persona-icon { font-size: 2.5rem; margin-bottom: 12px; }
-.persona-name { font-size: 1.1rem; font-weight: 700; color: #111827; margin-bottom: 4px; }
-.persona-company { font-size: 0.8rem; color: #9CA3AF; margin-bottom: 8px; }
-.persona-desc { font-size: 0.9rem; color: #6B7280; line-height: 1.5; margin-bottom: 12px; }
-.difficulty-badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-.diff-1 { background: #D1FAE5; color: #065F46; }
-.diff-2 { background: #DBEAFE; color: #1E40AF; }
-.diff-3 { background: #FEF3C7; color: #92400E; }
-.diff-4 { background: #FEE2E2; color: #991B1B; }
-.diff-5 { background: #EDE9FE; color: #5B21B6; }
-.step-card { background: #F9FAFB; border-radius: 16px; padding: 24px; text-align: center; height: 100%; }
-.section-header { font-size: 1.8rem; font-weight: 700; color: #111827; margin-bottom: 8px; }
-.section-sub { font-size: 1rem; color: #6B7280; margin-bottom: 24px; }
-.hint-bubble { background: #EEF2FF; border-left: 3px solid #4F46E5; padding: 8px 12px; border-radius: 0 8px 8px 0; font-size: 0.85rem; color: #4338CA; margin: 4px 0 12px 48px; }
-.stButton button { border-radius: 10px !important; font-weight: 600 !important; transition: all 0.2s !important; }
-.stButton button[kind="primary"] { background: linear-gradient(135deg, #4F46E5, #06B6D4) !important; border: none !important; }
-</style>
-""", unsafe_allow_html=True)
+from ui_theme import inject_theme, sidebar_brand
+inject_theme()
 
 def get_client():
     try:
@@ -248,12 +219,7 @@ def do_score(msgs, pname):
     return json.loads(raw.strip())
 
 # ── SIDEBAR ──────────────────────────────────────
-st.sidebar.markdown("""
-<div style="padding:16px 0 8px;">
-  <div style="font-size:1.3rem;font-weight:800;color:white;margin-bottom:4px;">🎙️ Voice & Design</div>
-  <div style="font-size:0.75rem;color:#9CA3AF;">UChicago ADS Capstone</div>
-</div>
-""", unsafe_allow_html=True)
+sidebar_brand()
 st.sidebar.markdown("---")
 
 # ── KEY FIX: Navigation with session state ────────
@@ -277,6 +243,9 @@ st.sidebar.markdown(f"""
 if best < 80:
     st.sidebar.progress(min(best/80,1.0))
 
+st.sidebar.markdown("---")
+st.sidebar.page_link("pages/4_Group_Practice_Call.py", label="👥 Group Practice Call")
+
 def go_to(page_name, persona_id=None):
     st.session_state["current_page"] = page_name
     if persona_id:
@@ -287,9 +256,9 @@ def go_to(page_name, persona_id=None):
 if page == "🏠 Home":
     col1, col2 = st.columns([3,2])
     with col1:
-        st.markdown('<div class="hero-label">AI-Powered Practice for UChicago Capstone</div>', unsafe_allow_html=True)
-        st.markdown('<div class="hero-title">Practice that feels real.<br>Results that are.</div>', unsafe_allow_html=True)
-        st.markdown('<div class="hero-sub">Practice your sponsor meetings with AI personas, get live coaching after every message, record your body language, and get certified meeting-ready — before the real thing.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="hero-label fade-in">AI-Powered Practice for UChicago Capstone</div>', unsafe_allow_html=True)
+        st.markdown('<div class="hero-title fade-in d1">Practice that feels real.<br>Results that are.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="hero-sub fade-in d2">Practice your sponsor meetings with AI personas, get live coaching after every message, record your body language, and get certified meeting-ready — before the real thing.</div>', unsafe_allow_html=True)
         c1,c2,c3 = st.columns(3)
         with c1:
             if st.button("💬 Start Practicing", use_container_width=True, type="primary"):
@@ -328,10 +297,10 @@ if page == "🏠 Home":
         ("4","Record & analyze","Film yourself during practice. AI analyzes your eye contact, confidence, engagement, and professionalism.")
     ]
     cols = st.columns(4)
-    for col,(num,title,desc) in zip(cols,steps):
-        with col:
+    for idx,(num,title,desc) in enumerate(steps):
+        with cols[idx]:
             st.markdown(f"""
-<div class="step-card">
+<div class="step-card fade-in d{idx+1}">
   <div style="width:44px;height:44px;background:linear-gradient(135deg,#4F46E5,#06B6D4);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:1.1rem;margin:0 auto 14px;">{num}</div>
   <div style="font-size:1rem;font-weight:700;color:#111827;margin-bottom:8px;">{title}</div>
   <div style="font-size:0.85rem;color:#6B7280;line-height:1.5;">{desc}</div>
@@ -343,10 +312,10 @@ if page == "🏠 Home":
     st.markdown('<div class="section-sub">Five AI personas, each with unique behavior, industry context, and difficulty level.</div>', unsafe_allow_html=True)
 
     cols = st.columns(5)
-    for col,(pid,p) in zip(cols,PERSONAS.items()):
-        with col:
+    for idx,(pid,p) in enumerate(PERSONAS.items()):
+        with cols[idx]:
             st.markdown(f"""
-<div class="persona-card">
+<div class="persona-card fade-in d{(idx % 6) + 1}">
   <div class="persona-icon">{p['icon']}</div>
   <div class="persona-name">{p['name']}</div>
   <div class="persona-company">🏢 {p['company']}</div>

@@ -7,8 +7,13 @@ from group_session_store import (
     create_room, join_room, get_room, start_session,
     advance_turn, log_expression, MAX_STUDENTS
 )
+from ui_theme import inject_theme, sidebar_brand
 
-st.set_page_config(page_title="Group Practice Call", layout="wide")
+st.set_page_config(page_title="Group Practice Call", page_icon="👥", layout="wide")
+inject_theme()
+sidebar_brand()
+st.sidebar.page_link("app.py", label="🏠 Home")
+st.sidebar.markdown("---")
 
 # ---------- helpers ----------
 
@@ -28,8 +33,8 @@ if "snapshot_counter" not in st.session_state:
 if "last_snapshot_bytes" not in st.session_state:
     st.session_state.last_snapshot_bytes = None
 
-st.title("👥 Group Practice Call")
-st.caption("Practice introducing yourself as a team, before the real sponsor meeting.")
+st.markdown('<div class="hero-title fade-in" style="font-size:2.2rem;">👥 Group Practice Call</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-sub fade-in d1">Practice introducing yourself as a team, before the real sponsor meeting.</div>', unsafe_allow_html=True)
 
 # ---------- lobby: create or join ----------
 
@@ -73,20 +78,23 @@ if room is None:
 
 me = st.session_state.student_name
 
-st.info(f"Room code: **{room.code}**  ·  Share this with your teammates  ·  "
-        f"{len(room.students)}/{MAX_STUDENTS} joined")
+st.markdown(f"""
+<div class="room-banner fade-in">
+  <span class="room-code-pill">{room.code}</span>
+  <span style="font-size:0.9rem;color:#374151;">Share this code with your teammates · {len(room.students)}/{MAX_STUDENTS} joined</span>
+</div>
+""", unsafe_allow_html=True)
 
 # roster grid
 cols = st.columns(min(len(room.students), 6) or 1)
 for i, (name, student) in enumerate(room.students.items()):
     with cols[i % len(cols)]:
-        label = f"🎙️ {name}" if name == room.current_speaker else name
         if student.done:
-            st.success(f"✅ {label}")
+            st.markdown(f'<div class="student-chip done">✅ {name}</div>', unsafe_allow_html=True)
         elif name == room.current_speaker:
-            st.warning(f"▶️ {label} (speaking now)")
+            st.markdown(f'<div class="student-chip speaking"><span class="live-dot"></span>&nbsp;{name} — speaking now</div>', unsafe_allow_html=True)
         else:
-            st.write(label)
+            st.markdown(f'<div class="student-chip">{name}</div>', unsafe_allow_html=True)
 
 if not room.started:
     if me == room.host_name:
