@@ -86,6 +86,31 @@ header [data-testid="stExpandSidebarButton"] svg { fill: #ffffff !important; col
 .stButton button[kind="primary"] { background: linear-gradient(135deg, #7A1F2E, #B3273A) !important; border: none !important; }
 .stButton button:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(159,43,63,0.18); }
 
+/* ---------- CTA banner (homepage "Ready to practice?") ----------
+   The text block and the button below it are meant to read as ONE
+   pill-shaped card, not two stacked rectangles with a visible seam. */
+.st-key-cta_banner .cta-card {
+  background: linear-gradient(135deg, #7A1F2E, #B3273A);
+  border-radius: 20px 20px 0 0;
+  padding: 36px 40px 18px;
+  text-align: center;
+  color: #ffffff;
+}
+.st-key-cta_banner div[data-testid="stVerticalBlock"] { gap: 0 !important; }
+.st-key-cta_banner .stButton { margin-top: 0 !important; }
+.st-key-cta_banner .stButton button[kind="primary"] {
+  background: #6E1B29 !important;
+  border-radius: 0 0 20px 20px !important;
+  border-top: 1px solid rgba(255,255,255,0.15) !important;
+  padding-top: 16px !important;
+  padding-bottom: 16px !important;
+  font-size: 1rem !important;
+}
+.st-key-cta_banner .stButton button[kind="primary"]:hover {
+  background: #7f2030 !important;
+  transform: none;
+}
+
 /* ---------- Entrance animation (Animation Framework: fade + stagger) ---------- */
 @keyframes fadeInUp { from { opacity:0; transform: translateY(18px); } to { opacity:1; transform: translateY(0); } }
 .fade-in { animation: fadeInUp .55s ease both; }

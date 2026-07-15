@@ -342,14 +342,15 @@ if page == "🏠 Home":
                 go_to("💬 Practice Session", pid)
 
     st.markdown("---")
-    st.markdown("""
-<div style="background:linear-gradient(135deg,#7A1F2E,#B3273A);border-radius:20px;padding:40px;text-align:center;color:white;">
+    with st.container(key="cta_banner"):
+        st.markdown("""
+<div class="cta-card">
   <div style="font-size:2rem;font-weight:800;margin-bottom:12px;">Ready to practice?</div>
-  <div style="font-size:1rem;opacity:0.9;margin-bottom:24px;">Hit 80/100 to get certified meeting-ready. Start with the Mentor Sponsor.</div>
+  <div style="font-size:1rem;opacity:0.9;">Hit 80/100 to get certified meeting-ready. Start with the Mentor Sponsor.</div>
 </div>
 """, unsafe_allow_html=True)
-    if st.button("🌱 Start with Mentor Sponsor", use_container_width=True, type="primary"):
-        go_to("💬 Practice Session", "mentor")
+        if st.button("🌱 Start with Mentor Sponsor", use_container_width=True, type="primary"):
+            go_to("💬 Practice Session", "mentor")
 
 # ── VIDEO PRACTICE ────────────────────────────────
 elif page == "📹 Video Practice":
