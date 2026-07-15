@@ -8,6 +8,8 @@ page re-inventing its own colors, spacing, and typography. This also fixes
 the previous gap where the Group Practice Call page had no styling at all.
 """
 
+import base64
+import os
 import streamlit as st
 
 THEME_CSS = """
@@ -84,11 +86,28 @@ def inject_theme():
     st.markdown(THEME_CSS, unsafe_allow_html=True)
 
 
+@st.cache_data(show_spinner=False)
+def _load_logo_b64():
+    path = os.path.join(os.path.dirname(__file__), "assets", "uchicago_logo.png")
+    try:
+        with open(path, "rb") as f:
+            return base64.b64encode(f.read()).decode()
+    except FileNotFoundError:
+        return ""
+
+
 def sidebar_brand():
     """Shared sidebar logo block, identical on every page."""
-    st.sidebar.markdown("""
+    logo_b64 = _load_logo_b64()
+    logo_html = (
+        f'<div style="background:#ffffff;border-radius:12px;padding:14px 16px;margin-bottom:14px;">'
+        f'<img src="data:image/png;base64,{logo_b64}" style="width:100%;display:block;">'
+        f'</div>'
+    ) if logo_b64 else ""
+    st.sidebar.markdown(f"""
 <div style="padding:16px 0 8px;">
+  {logo_html}
   <div style="font-size:1.3rem;font-weight:800;color:white;margin-bottom:4px;">🎓 Capstone Coach</div>
-  <div style="font-size:0.75rem;color:#9CA3AF;">UChicago ADS Capstone</div>
+  <div style="font-size:0.75rem;color:#9CA3AF;">Sponsor Meeting Simulator</div>
 </div>
 """, unsafe_allow_html=True)
