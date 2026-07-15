@@ -21,33 +21,7 @@ THEME_CSS = """
 /* Hide Streamlit's auto-generated multipage nav — we render our own below,
    so both the Home sidebar and the Group Practice Call page share one nav. */
 [data-testid="stSidebarNav"] { display: none; }
-/* IMPORTANT: don't hide the whole header — Streamlit's sidebar expand/collapse
-   arrow lives inside it. Hiding header entirely makes the sidebar unrecoverable
-   once collapsed. Hide only the menu/footer chrome, keep header transparent. */
-#MainMenu, footer { visibility: hidden; }
-header { background: transparent; }
-header [data-testid="stToolbar"] { visibility: hidden; }
-/* Make the native sidebar expand/collapse arrow impossible to miss — its
-   default styling is a faint gray icon that's easy to lose against a white page. */
-[data-testid="stSidebarCollapsedControl"],
-[data-testid="collapsedControl"] {
-  visibility: visible !important;
-  opacity: 1 !important;
-  background: #0f0f1a !important;
-  border-radius: 8px !important;
-  padding: 6px !important;
-  top: 12px !important;
-  left: 12px !important;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.25) !important;
-  z-index: 999999 !important;
-}
-[data-testid="stSidebarCollapsedControl"] svg,
-[data-testid="collapsedControl"] svg {
-  fill: #ffffff !important;
-  color: #ffffff !important;
-  width: 22px !important;
-  height: 22px !important;
-}
+#MainMenu, footer, header { visibility: hidden; }
 .block-container { padding-top: 2rem; max-width: 1200px; }
 
 /* ---------- Typography ---------- */
