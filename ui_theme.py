@@ -21,7 +21,25 @@ THEME_CSS = """
 /* Hide Streamlit's auto-generated multipage nav — we render our own below,
    so both the Home sidebar and the Group Practice Call page share one nav. */
 [data-testid="stSidebarNav"] { display: none; }
-#MainMenu, footer, header { visibility: hidden; }
+#MainMenu, footer { visibility: hidden; }
+header { visibility: hidden; }
+/* The sidebar expand arrow (stExpandSidebarButton) lives inside <header>,
+   which we hide above for a cleaner look. That was suppressing the only
+   control that lets a collapsed sidebar be reopened — force just this
+   button back to visible/clickable, styled as a small dark tab. */
+header [data-testid="stExpandSidebarButton"] {
+  visibility: visible !important;
+  display: flex !important;
+  position: fixed !important;
+  top: 10px !important;
+  left: 10px !important;
+  z-index: 999999 !important;
+  background: #0f0f1a !important;
+  border-radius: 8px !important;
+  padding: 6px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+header [data-testid="stExpandSidebarButton"] svg { fill: #ffffff !important; color: #ffffff !important; }
 .block-container { padding-top: 2rem; max-width: 1200px; }
 
 /* ---------- Typography ---------- */
