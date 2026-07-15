@@ -1,6 +1,6 @@
 """
 ui_theme.py
-Shared design system for Voice & Design.
+Shared design system for Capstone Coach.
 
 Every page (Home / Practice / Video / Progress / About / Group Practice Call)
 imports inject_theme() so the app has ONE visual language instead of each
@@ -88,7 +88,7 @@ def sidebar_brand():
     """Shared sidebar logo block, identical on every page."""
     st.sidebar.markdown("""
 <div style="padding:16px 0 8px;">
-  <div style="font-size:1.3rem;font-weight:800;color:white;margin-bottom:4px;">🎙️ Voice & Design</div>
+  <div style="font-size:1.3rem;font-weight:800;color:white;margin-bottom:4px;">🎓 Capstone Coach</div>
   <div style="font-size:0.75rem;color:#9CA3AF;">UChicago ADS Capstone</div>
 </div>
 """, unsafe_allow_html=True)

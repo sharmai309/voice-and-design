@@ -42,6 +42,10 @@ class Room:
     started: bool = False
     finished: bool = False
     created_at: float = field(default_factory=time.time)
+    zoom_join_url: str = ""
+    zoom_start_url: str = ""
+    zoom_meeting_id: str = ""
+    zoom_passcode: str = ""
 
     @property
     def current_speaker(self) -> Optional[str]:
@@ -66,12 +70,17 @@ def get_store() -> _GlobalStore:
 MAX_STUDENTS = 6
 
 
-def create_room(room_code: str, host_name: str) -> Room:
+def create_room(room_code: str, host_name: str, zoom_meeting: Optional[dict] = None) -> Room:
     store = get_store()
     with store.lock:
         room = Room(code=room_code, host_name=host_name)
         room.students[host_name] = Student(name=host_name)
         room.turn_order.append(host_name)
+        if zoom_meeting:
+            room.zoom_join_url = zoom_meeting.get("join_url", "")
+            room.zoom_start_url = zoom_meeting.get("start_url", "")
+            room.zoom_meeting_id = str(zoom_meeting.get("meeting_id", ""))
+            room.zoom_passcode = zoom_meeting.get("passcode", "")
         store.rooms[room_code] = room
         return room
 

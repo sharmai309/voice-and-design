@@ -8,6 +8,7 @@ from group_session_store import (
     advance_turn, log_expression, MAX_STUDENTS
 )
 from ui_theme import inject_theme, sidebar_brand
+from zoom_integration import zoom_configured, create_zoom_meeting, end_zoom_meeting
 
 st.set_page_config(page_title="Group Practice Call", page_icon="👥", layout="wide")
 inject_theme()
@@ -43,9 +44,15 @@ if st.session_state.room_code is None:
 
     with tab_create:
         host_name = st.text_input("Your name", key="host_name_input")
+        if not zoom_configured():
+            st.caption("ℹ️ Zoom isn't connected yet — the room will still work, just without a real Zoom meeting. See README for setup.")
         if st.button("Create Room", type="primary", disabled=not host_name):
             code = new_room_code()
-            create_room(code, host_name)
+            zoom_meeting = None
+            if zoom_configured():
+                with st.spinner("Creating your Zoom meeting..."):
+                    zoom_meeting = create_zoom_meeting(f"Capstone Sponsor Practice — Room {code}")
+            create_room(code, host_name, zoom_meeting=zoom_meeting)
             st.session_state.room_code = code
             st.session_state.student_name = host_name
             st.rerun()
@@ -85,6 +92,20 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
+# ---------- Zoom meeting ----------
+if room.zoom_join_url:
+    zc1, zc2, zc3 = st.columns([2,2,3])
+    with zc1:
+        st.link_button("📹 Join Zoom Meeting", room.zoom_join_url, type="primary", use_container_width=True)
+    with zc2:
+        if me == room.host_name and room.zoom_start_url:
+            st.link_button("🔑 Start as Host", room.zoom_start_url, use_container_width=True)
+    with zc3:
+        if room.zoom_passcode:
+            st.caption(f"Meeting ID: {room.zoom_meeting_id} · Passcode: {room.zoom_passcode}")
+else:
+    st.info("💡 No Zoom meeting attached to this room — practicing without a video call. Ask your host to connect Zoom (see README) to enable this next time.")
+
 # roster grid
 cols = st.columns(min(len(room.students), 6) or 1)
 for i, (name, student) in enumerate(room.students.items()):
@@ -106,6 +127,9 @@ if not room.started:
     st.stop()
 
 if room.finished:
+    if room.zoom_meeting_id and not st.session_state.get("zoom_ended_" + room.code):
+        end_zoom_meeting(room.zoom_meeting_id)
+        st.session_state["zoom_ended_" + room.code] = True
     st.header("📋 Meeting Summary")
     for name, student in room.students.items():
         with st.expander(f"{name}'s introduction", expanded=True):

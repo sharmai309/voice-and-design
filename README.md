@@ -1,4 +1,4 @@
-﻿# 🎙️ Voice & Design — AI Sponsor Meeting Simulator
+﻿# 🎓 Capstone Coach — AI Sponsor Meeting Simulator
 
 > Practice your Capstone sponsor meetings with AI personas, get real-time coaching, record your body language, and get certified meeting-ready — before the real thing.
 
@@ -10,7 +10,7 @@
 
 ## 🎯 What Is This?
 
-Voice & Design is a Yoodli-inspired AI-powered simulator that helps UChicago Applied Data Science Capstone students practice sponsor meetings before the real thing.
+Capstone Coach is an AI-powered simulator that helps UChicago Applied Data Science Capstone students practice sponsor meetings before the real thing.
 
 Students interact with 5 different AI sponsor personas, receive live coaching hints after every message, record themselves on webcam, and get scored across 4 communication dimensions. Hit 80/100 to get certified meeting-ready.
 
@@ -100,11 +100,19 @@ Create .streamlit/secrets.toml:
 `toml
 ANTHROPIC_API_KEY = "sk-ant-your-key-here"
 OPENAI_API_KEY = "sk-your-openai-key-here"
+ZOOM_ACCOUNT_ID = "your-zoom-account-id"
+ZOOM_CLIENT_ID = "your-zoom-client-id"
+ZOOM_CLIENT_SECRET = "your-zoom-client-secret"
 `
 
 Get your keys:
 - Anthropic: https://console.anthropic.com
 - OpenAI: https://platform.openai.com/api-keys
+- Zoom (for Group Practice Call): https://marketplace.zoom.us → Develop → Build App →
+  "Server-to-Server OAuth". Copy the Account ID, Client ID, and Client Secret it gives you,
+  and add the scopes for creating/managing meetings (`meeting:write:meeting` and related).
+  The app activates instantly — no Zoom review needed. Group Practice Call works fine
+  without these three keys too; it just won't attach a real Zoom meeting to the room.
 
 ### 5. Run the app
 `bash
@@ -134,8 +142,14 @@ To deploy your own copy:
 ## 📁 Project Structure
 
 `
-voice-and-design/
+capstone-simulator/
 ├── app.py                  # Full application — all pages in one file
+├── ui_theme.py             # Shared design system (CSS, sidebar brand) across every page
+├── zoom_integration.py     # Zoom Server-to-Server OAuth: creates real meetings for Group Practice Call
+├── facial_analysis.py      # Shared facial-expression analysis helper
+├── group_session_store.py  # In-memory store for Group Practice Call rooms
+├── pages/
+│   └── 4_Group_Practice_Call.py  # Multi-student group practice + Zoom meeting
 ├── requirements.txt        # Python dependencies
 ├── .gitignore              # Excludes secrets.toml and venv
 ├── README.md               # This file
@@ -156,8 +170,10 @@ voice-and-design/
 - [x] Session scoring across 4 dimensions
 - [x] Combined content + body language score
 - [x] Yoodli-style design with gradient UI
+- [x] Shared design system + entrance animations across every page
+- [x] Meeting scenario picker (Initial Meeting, Scope, Data, Progress Summary)
+- [x] Multi-student Group Practice Call with real Zoom meeting integration
 - [ ] Persistent score database (Supabase)
-- [ ] Multi-student team meeting simulation
 - [ ] Instructor dashboard
 - [ ] OpenAI Realtime API for live voice conversation
 

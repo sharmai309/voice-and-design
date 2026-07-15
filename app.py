@@ -2,7 +2,7 @@
 import os, json, base64, time
 from anthropic import Anthropic
 
-st.set_page_config(page_title="Voice & Design", page_icon="🎙️", layout="wide")
+st.set_page_config(page_title="Capstone Coach", page_icon="🎓", layout="wide")
 
 from ui_theme import inject_theme, sidebar_brand
 inject_theme()
@@ -23,6 +23,21 @@ PERSONAS = {
 }
 
 DIFF_CLASS = {1:"diff-1",2:"diff-2",3:"diff-3",4:"diff-4",5:"diff-5"}
+
+SCENARIOS = {
+    "initial": {"name":"Initial Meeting / Problem Definition","icon":"🧭",
+        "desc":"First meeting with your sponsor — introduce the team and nail down the problem you're solving.",
+        "context":"MEETING SCENARIO — INITIAL MEETING / PROBLEM DEFINITION: This is the team's first meeting with you. Steer the conversation toward understanding the problem statement, business context, and what success looks like. Ask why this problem matters now and who is affected."},
+    "scope": {"name":"Scope","icon":"📐",
+        "desc":"Define what's in and out of scope for the project, deliverables, and constraints.",
+        "context":"MEETING SCENARIO — SCOPE: This meeting is about defining scope. Steer the conversation toward what is and isn't included in the project, deliverables, timeline, and constraints. Push back if the team's scope sounds too broad, too vague, or unbounded."},
+    "data": {"name":"Data","icon":"🗄️",
+        "desc":"Discuss data sources, access, quality, and privacy/security constraints.",
+        "context":"MEETING SCENARIO — DATA: This meeting is about data. Steer the conversation toward what data sources are available, how the team will access them, data quality concerns, and any privacy/security constraints. Ask pointed questions about data readiness."},
+    "progress": {"name":"Progress Summary","icon":"📈",
+        "desc":"Give a progress update — what's done, what's blocked, what's next.",
+        "context":"MEETING SCENARIO — PROGRESS SUMMARY: This meeting is a status update. Expect the team to report what they've completed, what's blocked, and next steps. Ask about timeline risk and whether the project is on track."},
+}
 
 SCORE_PROMPT = """Evaluate this Capstone sponsor meeting. Score 0-25 each (total 100):
 1. PREPARATION: Research, agenda, informed questions
@@ -423,20 +438,32 @@ elif page == "💬 Practice Session":
     st.markdown('<div class="hero-title" style="font-size:2rem;">💬 Practice Session</div>', unsafe_allow_html=True)
     names = {v["name"]:k for k,v in PERSONAS.items()}
     default = st.session_state.get("pid","mentor")
-    sel = st.selectbox("Choose your sponsor",list(names.keys()),
-        index=list(names.keys()).index(PERSONAS[default]["name"]))
+    scenario_names = {v["name"]:k for k,v in SCENARIOS.items()}
+    default_scenario = st.session_state.get("scenario_id","initial")
+    sc1,sc2 = st.columns(2)
+    with sc1:
+        sel = st.selectbox("Choose your sponsor",list(names.keys()),
+            index=list(names.keys()).index(PERSONAS[default]["name"]))
+    with sc2:
+        scen_sel = st.selectbox("Choose your meeting scenario",list(scenario_names.keys()),
+            index=list(scenario_names.keys()).index(SCENARIOS[default_scenario]["name"]))
     pid = names[sel]
     p = PERSONAS[pid]
+    scenario_id = scenario_names[scen_sel]
+    scenario = SCENARIOS[scenario_id]
+    st.session_state["scenario_id"] = scenario_id
+    system_prompt = p["prompt"] + "\n\n" + scenario["context"]
     col1,col2 = st.columns([3,1])
     with col1:
-        with st.expander(f"{p['icon']} About {p['name']} — {p['company']}"):
+        with st.expander(f"{p['icon']} About {p['name']} — {p['company']}  ·  {scenario['icon']} {scenario['name']}"):
             st.markdown(f"**Role:** {p['role']}")
             st.markdown(f"**Difficulty:** {'★'*p['difficulty']}{'☆'*(5-p['difficulty'])} {p['diff_label']}")
             st.markdown(p["desc"])
+            st.markdown(f"**Scenario:** {scenario['desc']}")
     with col2:
         voice_on = st.toggle("🔊 Sponsor voice",value=False)
     st.markdown("---")
-    mkey,hkey = f"m_{pid}",f"h_{pid}"
+    mkey,hkey = f"m_{pid}_{scenario_id}",f"h_{pid}_{scenario_id}"
     if mkey not in st.session_state: st.session_state[mkey]=[]
     if hkey not in st.session_state: st.session_state[hkey]=[]
     if "scored" not in st.session_state: st.session_state["scored"]=False
@@ -457,7 +484,7 @@ elif page == "💬 Practice Session":
     if not msgs:
         with st.spinner(f"{p['icon']} {p['name']} is joining..."):
             r = get_client().messages.create(model="claude-sonnet-4-6",max_tokens=200,
-                system=p["prompt"],messages=[{"role":"user","content":"Begin the meeting now."}])
+                system=system_prompt,messages=[{"role":"user","content":"Begin the meeting now."}])
             opening = r.content[0].text
             msgs.append({"role":"assistant","content":opening})
             st.session_state[mkey]=msgs
@@ -504,7 +531,7 @@ elif page == "💬 Practice Session":
                 with st.chat_message("assistant",avatar=p["icon"]):
                     with st.spinner("Responding..."):
                         r = get_client().messages.create(model="claude-sonnet-4-6",max_tokens=300,
-                            system=p["prompt"],messages=msgs)
+                            system=system_prompt,messages=msgs)
                         reply = r.content[0].text
                         msgs.append({"role":"assistant","content":reply})
                         st.session_state[mkey]=msgs
@@ -522,7 +549,7 @@ elif page == "💬 Practice Session":
             with st.chat_message("assistant",avatar=p["icon"]):
                 with st.spinner("Responding..."):
                     r = get_client().messages.create(model="claude-sonnet-4-6",max_tokens=300,
-                        system=p["prompt"],messages=msgs)
+                        system=system_prompt,messages=msgs)
                     reply = r.content[0].text
                     msgs.append({"role":"assistant","content":reply})
                     st.session_state[mkey]=msgs
@@ -631,24 +658,26 @@ elif page == "📈 My Progress":
 
 # ── ABOUT ─────────────────────────────────────────
 elif page == "ℹ️ About":
-    st.markdown('<div class="hero-title" style="font-size:2rem;">ℹ️ About Voice & Design</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-title" style="font-size:2rem;">🎓 About Capstone Coach</div>', unsafe_allow_html=True)
     st.markdown("---")
     st.markdown("""
-## 🎙️ Voice & Design
-AI-powered Yoodli-style sponsor meeting simulator for UChicago ADS Capstone students.
+## 🎓 Capstone Coach
+AI-powered sponsor meeting simulator for UChicago ADS Capstone students — practice with AI personas, live coaching, and full team assessment before the real thing.
 
 ### Features
-- 💬 Text chat with 5 AI sponsor personas
+- 🗂️ Meeting scenario picker — Initial Meeting, Scope, Data, Progress Summary
+- 💬 Text chat with AI sponsor personas
 - 🎙️ Voice record button — speak to your sponsor
 - 🔊 Sponsor speaks back with OpenAI TTS
 - 📹 Record your interview practice session
 - 😊 AI analyzes facial expressions and body language
 - 💡 Live coaching hints after every message
 - 📊 Combined content + body language score
+- 👥 Zoom-integrated Group Practice Call — assess every team member
 - 🏆 Get certified meeting-ready at 80+
 
 ### Tech Stack
-Streamlit · Claude API · OpenAI Whisper · OpenAI TTS · Claude Vision
+Streamlit · Claude API · OpenAI Whisper · OpenAI TTS · Claude Vision · Zoom API
 
 ### Built For
 UChicago Master of Applied Data Science — Capstone Program
