@@ -10,7 +10,7 @@ from group_session_store import (
 from ui_theme import inject_theme, sidebar_brand
 from zoom_integration import zoom_configured, create_zoom_meeting, end_zoom_meeting
 
-st.set_page_config(page_title="Group Practice Call", page_icon="👥", layout="wide")
+st.set_page_config(page_title="Group Practice Call", page_icon="👥", layout="wide", initial_sidebar_state="expanded")
 inject_theme()
 sidebar_brand()
 st.sidebar.page_link("app.py", label="🏠 Home")

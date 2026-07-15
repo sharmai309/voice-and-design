@@ -2,7 +2,7 @@
 import os, json, base64, time
 from anthropic import Anthropic
 
-st.set_page_config(page_title="Capstone Coach", page_icon="🎓", layout="wide")
+st.set_page_config(page_title="Capstone Coach", page_icon="🎓", layout="wide", initial_sidebar_state="expanded")
 
 from ui_theme import inject_theme, sidebar_brand
 inject_theme()
