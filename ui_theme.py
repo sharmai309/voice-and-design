@@ -51,7 +51,7 @@ header [data-testid="stToolbar"] { visibility: hidden; }
 .block-container { padding-top: 2rem; max-width: 1200px; }
 
 /* ---------- Typography ---------- */
-.hero-title { font-size: 3.5rem; font-weight: 800; background: linear-gradient(135deg, #4F46E5, #06B6D4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1.2; margin-bottom: 1rem; }
+.hero-title { font-size: 3.5rem; font-weight: 800; background: linear-gradient(135deg, #7A1F2E, #B3273A); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1.2; margin-bottom: 1rem; }
 .hero-sub { font-size: 1.2rem; color: #6B7280; margin-bottom: 2rem; line-height: 1.6; }
 .hero-label { font-size: 0.85rem; font-weight: 600; color: #6B7280; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
 .section-header { font-size: 1.8rem; font-weight: 700; color: #111827; margin-bottom: 8px; }
@@ -59,7 +59,7 @@ header [data-testid="stToolbar"] { visibility: hidden; }
 
 /* ---------- Cards ---------- */
 .persona-card { background: #ffffff; border: 1px solid #E5E7EB; border-radius: 16px; padding: 24px; transition: all 0.2s; height: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-.persona-card:hover { border-color: #4F46E5; box-shadow: 0 8px 25px rgba(79,70,229,0.12); transform: translateY(-2px); }
+.persona-card:hover { border-color: #9F2B3F; box-shadow: 0 8px 25px rgba(159,43,63,0.12); transform: translateY(-2px); }
 .persona-icon { font-size: 2.5rem; margin-bottom: 12px; }
 .persona-name { font-size: 1.1rem; font-weight: 700; color: #111827; margin-bottom: 4px; }
 .persona-company { font-size: 0.8rem; color: #9CA3AF; margin-bottom: 8px; }
@@ -70,17 +70,17 @@ header [data-testid="stToolbar"] { visibility: hidden; }
 /* ---------- Badges & hints ---------- */
 .difficulty-badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
 .diff-1 { background: #D1FAE5; color: #065F46; }
-.diff-2 { background: #DBEAFE; color: #1E40AF; }
+.diff-2 { background: #E5E7EB; color: #374151; }
 .diff-3 { background: #FEF3C7; color: #92400E; }
 .diff-4 { background: #FEE2E2; color: #991B1B; }
 .diff-5 { background: #EDE9FE; color: #5B21B6; }
-.hint-bubble { background: #EEF2FF; border-left: 3px solid #4F46E5; padding: 8px 12px; border-radius: 0 8px 8px 0; font-size: 0.85rem; color: #4338CA; margin: 4px 0 12px 48px; }
+.hint-bubble { background: #FBEAEC; border-left: 3px solid #9F2B3F; padding: 8px 12px; border-radius: 0 8px 8px 0; font-size: 0.85rem; color: #7A1F2E; margin: 4px 0 12px 48px; }
 
 /* ---------- Group Practice Call components ---------- */
-.room-banner { background: linear-gradient(135deg,#EEF2FF,#E0F2FE); border-radius: 16px; padding: 18px 22px; margin-bottom: 18px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
-.room-code-pill { background:#ffffff; border-radius:10px; padding:8px 16px; font-weight:800; font-size:1.15rem; letter-spacing:0.12em; color:#4F46E5; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+.room-banner { background: linear-gradient(135deg,#FBEAEC,#F7DEE1); border-radius: 16px; padding: 18px 22px; margin-bottom: 18px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+.room-code-pill { background:#ffffff; border-radius:10px; padding:8px 16px; font-weight:800; font-size:1.15rem; letter-spacing:0.12em; color:#9F2B3F; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
 .student-chip { display:flex; align-items:center; gap:8px; background:#F9FAFB; border:1px solid #E5E7EB; border-radius:12px; padding:10px 14px; font-weight:600; font-size:0.9rem; color:#111827; margin-bottom:8px; transition: all .2s ease; }
-.student-chip.speaking { background:#EEF2FF; border-color:#4F46E5; }
+.student-chip.speaking { background:#FBEAEC; border-color:#9F2B3F; }
 .student-chip.done { background:#ECFDF5; border-color:#10B981; color:#065F46; }
 .live-dot { width:9px; height:9px; border-radius:50%; background:#EF4444; display:inline-block; animation: pulse 1.4s infinite; }
 @keyframes pulse {
@@ -91,8 +91,8 @@ header [data-testid="stToolbar"] { visibility: hidden; }
 
 /* ---------- Buttons ---------- */
 .stButton button { border-radius: 10px !important; font-weight: 600 !important; transition: all 0.2s !important; }
-.stButton button[kind="primary"] { background: linear-gradient(135deg, #4F46E5, #06B6D4) !important; border: none !important; }
-.stButton button:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(79,70,229,0.18); }
+.stButton button[kind="primary"] { background: linear-gradient(135deg, #7A1F2E, #B3273A) !important; border: none !important; }
+.stButton button:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(159,43,63,0.18); }
 
 /* ---------- Entrance animation (Animation Framework: fade + stagger) ---------- */
 @keyframes fadeInUp { from { opacity:0; transform: translateY(18px); } to { opacity:1; transform: translateY(0); } }

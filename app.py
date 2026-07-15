@@ -64,7 +64,7 @@ VIDEO_HTML = """
 <div style="font-family:sans-serif;">
   <video id="videoEl" autoplay muted playsinline style="width:100%;border-radius:12px;background:#000;max-height:380px;"></video>
   <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
-    <button id="startBtn" onclick="startRecording()" style="padding:10px 20px;border-radius:8px;border:none;background:linear-gradient(135deg,#4F46E5,#06B6D4);color:white;font-size:14px;font-weight:600;cursor:pointer;">▶️ Start Recording</button>
+    <button id="startBtn" onclick="startRecording()" style="padding:10px 20px;border-radius:8px;border:none;background:linear-gradient(135deg,#7A1F2E,#B3273A);color:white;font-size:14px;font-weight:600;cursor:pointer;">▶️ Start Recording</button>
     <button id="stopBtn" onclick="stopRecording()" disabled style="padding:10px 20px;border-radius:8px;border:none;background:#EF4444;color:white;font-size:14px;font-weight:600;cursor:pointer;opacity:0.4;">⏹️ Stop</button>
     <span id="timer" style="padding:10px;font-size:14px;color:#EF4444;font-weight:600;align-self:center;"></span>
   </div>
@@ -72,7 +72,7 @@ VIDEO_HTML = """
   <div id="previewDiv" style="margin-top:12px;display:none;">
     <p style="font-size:13px;font-weight:600;margin-bottom:6px;">📹 Your recording:</p>
     <video id="previewEl" controls style="width:100%;border-radius:8px;max-height:280px;"></video>
-    <a id="downloadLink" download="interview-practice.webm" style="display:inline-block;margin-top:8px;padding:8px 16px;background:#4F46E5;color:white;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;">⬇️ Download Video</a>
+    <a id="downloadLink" download="interview-practice.webm" style="display:inline-block;margin-top:8px;padding:8px 16px;background:#9F2B3F;color:white;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;">⬇️ Download Video</a>
   </div>
 </div>
 <script>
@@ -126,7 +126,7 @@ function stopRecording(){
 
 VOICE_BTN_HTML = """
 <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:#F9FAFB;border-radius:12px;margin-bottom:10px;border:1px solid #E5E7EB;">
-  <button id="micBtn" onclick="toggleMic()" style="width:52px;height:52px;border-radius:50%;border:2px solid #4F46E5;background:white;font-size:22px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 8px rgba(79,70,229,0.2);transition:all 0.2s;">🎙️</button>
+  <button id="micBtn" onclick="toggleMic()" style="width:52px;height:52px;border-radius:50%;border:2px solid #9F2B3F;background:white;font-size:22px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 8px rgba(159,43,63,0.2);transition:all 0.2s;">🎙️</button>
   <div>
     <div id="micStatus" style="font-size:13px;font-weight:600;color:#111827;">Click mic to record your voice</div>
     <div id="micHint" style="font-size:11px;color:#9CA3AF;margin-top:2px;">Your speech will be transcribed and sent to the sponsor automatically</div>
@@ -166,7 +166,7 @@ async function toggleMic(){
     recorder.stop();
     recording=false;
     document.getElementById("micBtn").style.background="white";
-    document.getElementById("micBtn").style.borderColor="#4F46E5";
+    document.getElementById("micBtn").style.borderColor="#9F2B3F";
     document.getElementById("micBtn").textContent="🎙️";
     document.getElementById("micStatus").textContent="Click mic to record your voice";
     document.getElementById("micHint").textContent="Your speech will be transcribed and sent to the sponsor";
@@ -283,11 +283,11 @@ if page == "🏠 Home":
                 go_to("📹 Video Practice")
     with col2:
         st.markdown("""
-<div style="background:linear-gradient(135deg,#EEF2FF,#E0F2FE);border-radius:20px;padding:24px;margin-top:16px;">
+<div style="background:linear-gradient(135deg,#FBEAEC,#F7DEE1);border-radius:20px;padding:24px;margin-top:16px;">
   <div style="font-size:0.7rem;font-weight:600;color:#6B7280;letter-spacing:0.1em;margin-bottom:12px;">LIVE PRACTICE SESSION</div>
   <div style="background:white;border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-      <div style="width:36px;height:36px;background:#4F46E5;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;">🔍</div>
+      <div style="width:36px;height:36px;background:#9F2B3F;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;">🔍</div>
       <div>
         <div style="font-size:0.85rem;font-weight:600;color:#111827;">Dr. Raj Patel</div>
         <div style="font-size:0.75rem;color:#9CA3AF;">CDO at Verizon · Skeptical</div>
@@ -295,7 +295,7 @@ if page == "🏠 Home":
     </div>
     <div style="font-size:0.85rem;color:#374151;line-height:1.5;">"You're solving before diagnosing the problem. What data supports that assumption?"</div>
   </div>
-  <div style="background:#EEF2FF;border-radius:10px;padding:10px 12px;font-size:0.8rem;color:#4338CA;">
+  <div style="background:#FBEAEC;border-radius:10px;padding:10px 12px;font-size:0.8rem;color:#7A1F2E;">
     💡 <strong>Hint:</strong> Back up your claim with a specific data point or source.
   </div>
 </div>
@@ -316,7 +316,7 @@ if page == "🏠 Home":
         with cols[idx]:
             st.markdown(f"""
 <div class="step-card fade-in d{idx+1}">
-  <div style="width:44px;height:44px;background:linear-gradient(135deg,#4F46E5,#06B6D4);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:1.1rem;margin:0 auto 14px;">{num}</div>
+  <div style="width:44px;height:44px;background:linear-gradient(135deg,#7A1F2E,#B3273A);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:1.1rem;margin:0 auto 14px;">{num}</div>
   <div style="font-size:1rem;font-weight:700;color:#111827;margin-bottom:8px;">{title}</div>
   <div style="font-size:0.85rem;color:#6B7280;line-height:1.5;">{desc}</div>
 </div>
@@ -343,7 +343,7 @@ if page == "🏠 Home":
 
     st.markdown("---")
     st.markdown("""
-<div style="background:linear-gradient(135deg,#4F46E5,#06B6D4);border-radius:20px;padding:40px;text-align:center;color:white;">
+<div style="background:linear-gradient(135deg,#7A1F2E,#B3273A);border-radius:20px;padding:40px;text-align:center;color:white;">
   <div style="font-size:2rem;font-weight:800;margin-bottom:12px;">Ready to practice?</div>
   <div style="font-size:1rem;opacity:0.9;margin-bottom:24px;">Hit 80/100 to get certified meeting-ready. Start with the Mentor Sponsor.</div>
 </div>
