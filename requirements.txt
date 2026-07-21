@@ -1,11 +1,5 @@
-anthropic
-streamlit
-openai
-opencv-python-headless
-pillow
-streamlit-webrtc
-aiortc
-numpy
+anthropic>=0.40
+streamlit>=1.40
+openai>=1.50
 streamlit-autorefresh
-av
 requests

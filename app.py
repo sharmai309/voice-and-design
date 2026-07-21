@@ -1,5 +1,6 @@
 ﻿import streamlit as st
-import os, json, base64, time
+import os, json, base64, time, re
+from concurrent.futures import ThreadPoolExecutor
 from anthropic import Anthropic
 
 st.set_page_config(page_title="Capstone Coach", page_icon="🎓", layout="wide", initial_sidebar_state="expanded")
@@ -10,9 +11,39 @@ inject_theme()
 def get_client():
     try:
         key = st.secrets["ANTHROPIC_API_KEY"]
-    except:
+    except Exception:
         key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not key:
+        st.error("⚠️ ANTHROPIC_API_KEY is not set. Add it to .streamlit/secrets.toml or your environment.")
     return Anthropic(api_key=key)
+
+def get_openai_client():
+    from openai import OpenAI
+    try:
+        key = st.secrets["OPENAI_API_KEY"]
+    except Exception:
+        key = os.environ.get("OPENAI_API_KEY", "")
+    if not key:
+        st.error("⚠️ OPENAI_API_KEY is not set. Add it to .streamlit/secrets.toml or your environment.")
+    return OpenAI(api_key=key)
+
+def extract_json(raw):
+    match = re.search(r"\{.*\}", raw, re.DOTALL)
+    if not match:
+        raise ValueError("No JSON object found in model response")
+    return json.loads(match.group(0))
+
+def truncate_at_sentence(text, limit):
+    if len(text) <= limit:
+        return text
+    snippet = text[:limit]
+    ends = list(re.finditer(r"[.!?](?:\s|$)", snippet))
+    if ends:
+        return snippet[:ends[-1].end()].strip()
+    spaces = list(re.finditer(r"\s", snippet))
+    if spaces:
+        return snippet[:spaces[-1].start()].strip()
+    return snippet
 
 PERSONAS = {
     "mentor": {"name":"Mentor Sponsor","icon":"🌱","difficulty":1,"diff_label":"Beginner","company":"HealthTech Analytics","role":"Dr. Sarah Chen · Sr. Director of Analytics","desc":"Warm and encouraging. Guides you with questions rather than answers.","prompt":"You are Dr. Sarah Chen, Senior Director of Analytics at HealthTech Analytics, a MENTOR SPONSOR for a UChicago Capstone team. Be warm, encouraging, patient. Ask guiding questions. Keep responses 2-4 sentences. START: Hi team, great to finally connect. Go ahead and introduce yourselves."},
@@ -124,70 +155,19 @@ function stopRecording(){
 </script>
 """
 
-VOICE_BTN_HTML = """
-<div style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:#F9FAFB;border-radius:12px;margin-bottom:10px;border:1px solid #E5E7EB;">
-  <button id="micBtn" onclick="toggleMic()" style="width:52px;height:52px;border-radius:50%;border:2px solid #9F2B3F;background:white;font-size:22px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 8px rgba(159,43,63,0.2);transition:all 0.2s;">🎙️</button>
-  <div>
-    <div id="micStatus" style="font-size:13px;font-weight:600;color:#111827;">Click mic to record your voice</div>
-    <div id="micHint" style="font-size:11px;color:#9CA3AF;margin-top:2px;">Your speech will be transcribed and sent to the sponsor automatically</div>
-  </div>
-</div>
-<script>
-let recorder,audioChunks=[],recording=false;
-async function toggleMic(){
-  if(!recording){
-    try{
-      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-      recorder=new MediaRecorder(stream);
-      audioChunks=[];
-      recorder.ondataavailable=e=>audioChunks.push(e.data);
-      recorder.onstop=()=>{
-        const blob=new Blob(audioChunks,{type:"audio/webm"});
-        const reader=new FileReader();
-        reader.onloadend=()=>{
-          window.parent.postMessage({type:"voice",data:reader.result.split(",")[1]},"*");
-          document.getElementById("micStatus").textContent="⏳ Transcribing...";
-          document.getElementById("micHint").textContent="Please wait...";
-        };
-        reader.readAsDataURL(blob);
-        stream.getTracks().forEach(t=>t.stop());
-      };
-      recorder.start();
-      recording=true;
-      document.getElementById("micBtn").style.background="#EF4444";
-      document.getElementById("micBtn").style.borderColor="#EF4444";
-      document.getElementById("micBtn").textContent="⏹️";
-      document.getElementById("micStatus").textContent="🔴 Recording — click to stop";
-      document.getElementById("micHint").textContent="Speak clearly to the sponsor";
-    }catch(e){
-      document.getElementById("micStatus").textContent="❌ Microphone access denied";
-    }
-  }else{
-    recorder.stop();
-    recording=false;
-    document.getElementById("micBtn").style.background="white";
-    document.getElementById("micBtn").style.borderColor="#9F2B3F";
-    document.getElementById("micBtn").textContent="🎙️";
-    document.getElementById("micStatus").textContent="Click mic to record your voice";
-    document.getElementById("micHint").textContent="Your speech will be transcribed and sent to the sponsor";
-  }
-}
-</script>
-"""
-
-def transcribe_audio(audio_b64):
+def transcribe_audio(audio_bytes):
     try:
-        from openai import OpenAI
         import tempfile
-        oai = OpenAI(api_key=st.secrets.get("OPENAI_API_KEY",""))
-        audio_bytes = base64.b64decode(audio_b64)
+        oai = get_openai_client()
         with tempfile.NamedTemporaryFile(suffix=".webm", delete=False) as f:
             f.write(audio_bytes)
             fname = f.name
         with open(fname, "rb") as f:
             result = oai.audio.transcriptions.create(model="whisper-1", file=f)
         return result.text
-    except: return None
+    except Exception as e:
+        st.error(f"Transcription failed: {e}")
+        return None
 
 def analyze_facial_expression(image_bytes):
     try:
@@ -198,40 +178,77 @@ def analyze_facial_expression(image_bytes):
                 {"type":"image","source":{"type":"base64","media_type":"image/jpeg","data":b64}},
                 {"type":"text","text":FACIAL_PROMPT}
             ]}])
-        raw = r.content[0].text.strip()
-        if "```" in raw:
-            raw = raw.split("```")[1]
-            if raw.startswith("json"): raw = raw[4:]
-        return json.loads(raw.strip())
+        return extract_json(r.content[0].text.strip())
     except Exception as e:
         st.error(f"Analysis error: {e}")
         return None
 
 def speak_text(text):
     try:
-        from openai import OpenAI
-        oai = OpenAI(api_key=st.secrets.get("OPENAI_API_KEY",""))
-        resp = oai.audio.speech.create(model="tts-1", voice="nova", input=text[:500])
+        oai = get_openai_client()
+        snippet = truncate_at_sentence(text, 500)
+        resp = oai.audio.speech.create(model="tts-1", voice="nova", input=snippet)
         b64 = base64.b64encode(resp.content).decode()
         st.markdown(f'<audio autoplay><source src="data:audio/mp3;base64,{b64}" type="audio/mp3"></audio>', unsafe_allow_html=True)
-    except: pass
+    except Exception as e:
+        st.warning(f"Sponsor voice unavailable: {e}")
 
-def get_hint(msg):
+def get_hint(client, msg):
     try:
-        r = get_client().messages.create(model="claude-sonnet-4-6", max_tokens=60,
+        r = client.messages.create(model="claude-sonnet-4-6", max_tokens=60,
             messages=[{"role":"user","content":HINT_PROMPT+msg}])
-        return r.content[0].text.strip()
-    except: return ""
+        return r.content[0].text.strip(), None
+    except Exception as e:
+        return "", e
 
 def do_score(msgs, pname):
     convo = "".join(f"{'STUDENT' if m['role']=='user' else 'SPONSOR'}: {m['content']}\n\n" for m in msgs)
-    r = get_client().messages.create(model="claude-sonnet-4-6", max_tokens=800,
-        messages=[{"role":"user","content":SCORE_PROMPT+convo}])
-    raw = r.content[0].text.strip()
-    if "```" in raw:
-        raw = raw.split("```")[1]
-        if raw.startswith("json"): raw = raw[4:]
-    return json.loads(raw.strip())
+    try:
+        r = get_client().messages.create(model="claude-sonnet-4-6", max_tokens=800,
+            messages=[{"role":"user","content":SCORE_PROMPT+convo}])
+        return extract_json(r.content[0].text.strip())
+    except Exception as e:
+        st.error(f"Scoring failed: {e}")
+        return None
+
+def handle_user_message(user_text, msgs, hints, mkey, hkey, system_prompt, voice_on):
+    msgs.append({"role": "user", "content": user_text})
+    client = get_client()
+
+    def _reply_task():
+        return client.messages.create(model="claude-sonnet-4-6", max_tokens=500,
+            system=system_prompt, messages=msgs)
+
+    with ThreadPoolExecutor(max_workers=2) as ex:
+        hint_future = ex.submit(get_hint, client, user_text)
+        reply_future = ex.submit(_reply_task)
+        hint, hint_err = hint_future.result()
+        try:
+            reply = reply_future.result().content[0].text
+        except Exception as e:
+            reply = None
+            reply_err = e
+        else:
+            reply_err = None
+
+    if hint_err:
+        st.warning(f"Hint unavailable: {hint_err}")
+    hints.append(hint)
+    st.session_state[hkey] = hints
+
+    if reply_err:
+        st.error(f"Sponsor reply failed: {reply_err}")
+    else:
+        msgs.append({"role": "assistant", "content": reply})
+        st.session_state[mkey] = msgs
+        if voice_on:
+            st.session_state["pending_tts"] = reply
+    st.rerun()
+
+# Play any sponsor TTS queued by the previous turn, now that the rerun has
+# completed — rendering it before the rerun would wipe the <audio> element.
+if st.session_state.get("pending_tts"):
+    speak_text(st.session_state.pop("pending_tts"))
 
 # ── SIDEBAR ──────────────────────────────────────
 sidebar_brand()
@@ -465,31 +482,34 @@ elif page == "💬 Practice Session":
         voice_on = st.toggle("🔊 Sponsor voice",value=False)
     st.markdown("---")
     mkey,hkey = f"m_{pid}_{scenario_id}",f"h_{pid}_{scenario_id}"
+    scored_key,result_key = f"scored_{pid}_{scenario_id}",f"result_{pid}_{scenario_id}"
     if mkey not in st.session_state: st.session_state[mkey]=[]
     if hkey not in st.session_state: st.session_state[hkey]=[]
-    if "scored" not in st.session_state: st.session_state["scored"]=False
-    if "result" not in st.session_state: st.session_state["result"]=None
-    if "pending_voice" not in st.session_state: st.session_state["pending_voice"]=None
+    if scored_key not in st.session_state: st.session_state[scored_key]=False
+    if result_key not in st.session_state: st.session_state[result_key]=None
     msgs = st.session_state[mkey]
     hints = st.session_state[hkey]
     c1,c2 = st.columns([1,4])
     with c1:
         if st.button("🔄 New Session"):
             st.session_state[mkey]=[]; st.session_state[hkey]=[]
-            st.session_state["scored"]=False; st.session_state["result"]=None
-            st.session_state["pending_voice"]=None
+            st.session_state[scored_key]=False; st.session_state[result_key]=None
             st.rerun()
     with c2:
         turns = sum(1 for m in msgs if m["role"]=="user")
         st.caption(f"💬 {turns} responses — {'🎯 Ready to score!' if turns>=3 else f'Need {3-turns} more to unlock scoring'}")
     if not msgs:
-        with st.spinner(f"{p['icon']} {p['name']} is joining..."):
-            r = get_client().messages.create(model="claude-sonnet-4-6",max_tokens=200,
-                system=system_prompt,messages=[{"role":"user","content":"Begin the meeting now."}])
-            opening = r.content[0].text
-            msgs.append({"role":"assistant","content":opening})
-            st.session_state[mkey]=msgs
-            if voice_on: speak_text(opening)
+        try:
+            with st.spinner(f"{p['icon']} {p['name']} is joining..."):
+                r = get_client().messages.create(model="claude-sonnet-4-6",max_tokens=200,
+                    system=system_prompt,messages=[{"role":"user","content":"Begin the meeting now."}])
+                opening = r.content[0].text
+                msgs.append({"role":"assistant","content":opening})
+                st.session_state[mkey]=msgs
+                if voice_on: speak_text(opening)
+        except Exception as e:
+            st.error(f"Could not start the meeting: {e}")
+            st.stop()
     col_chat,col_side = st.columns([3,1])
     with col_chat:
         for i,m in enumerate(msgs):
@@ -513,64 +533,38 @@ elif page == "💬 Practice Session":
             for h in hints[-3:]:
                 st.markdown(f'<div class="hint-bubble">{h}</div>', unsafe_allow_html=True)
 
-    if not st.session_state["scored"]:
+    if not st.session_state[scored_key]:
         st.markdown("---")
         st.markdown("#### 🎙️ Record your voice")
-        st.components.v1.html(VOICE_BTN_HTML, height=90)
-        if st.session_state.get("pending_voice"):
-            audio_b64 = st.session_state["pending_voice"]
-            st.session_state["pending_voice"]=None
+        voice_key = f"voice_{pid}_{scenario_id}_{turns}"
+        audio_file = st.audio_input("Record your voice", key=voice_key, label_visibility="collapsed")
+        if audio_file is not None:
             with st.spinner("🎙️ Transcribing..."):
-                transcript = transcribe_audio(audio_b64)
+                transcript = transcribe_audio(audio_file.getvalue())
             if transcript:
                 st.info(f"🎙️ You said: *{transcript}*")
-                hint = get_hint(transcript)
-                hints.append(hint)
-                st.session_state[hkey]=hints
-                msgs.append({"role":"user","content":transcript})
-                st.session_state[mkey]=msgs
-                with st.chat_message("assistant",avatar=p["icon"]):
-                    with st.spinner("Responding..."):
-                        r = get_client().messages.create(model="claude-sonnet-4-6",max_tokens=300,
-                            system=system_prompt,messages=msgs)
-                        reply = r.content[0].text
-                        msgs.append({"role":"assistant","content":reply})
-                        st.session_state[mkey]=msgs
-                        if voice_on: speak_text(reply)
-                st.rerun()
+                handle_user_message(transcript, msgs, hints, mkey, hkey, system_prompt, voice_on)
             else:
                 st.warning("Could not transcribe — check your OpenAI API key.")
         st.markdown("#### ✍️ Or type your message")
         if prompt := st.chat_input("Type your message to the sponsor..."):
-            hint = get_hint(prompt)
-            hints.append(hint)
-            st.session_state[hkey]=hints
-            msgs.append({"role":"user","content":prompt})
-            st.session_state[mkey]=msgs
-            with st.chat_message("assistant",avatar=p["icon"]):
-                with st.spinner("Responding..."):
-                    r = get_client().messages.create(model="claude-sonnet-4-6",max_tokens=300,
-                        system=system_prompt,messages=msgs)
-                    reply = r.content[0].text
-                    msgs.append({"role":"assistant","content":reply})
-                    st.session_state[mkey]=msgs
-                    if voice_on: speak_text(reply)
-            st.rerun()
+            handle_user_message(prompt, msgs, hints, mkey, hkey, system_prompt, voice_on)
 
     turns = sum(1 for m in msgs if m["role"]=="user")
-    if turns>=3 and not st.session_state["scored"]:
+    if turns>=3 and not st.session_state[scored_key]:
         st.markdown("---")
         if st.button("🏁 End Meeting & Get Score",type="primary",use_container_width=True):
             with st.spinner("Evaluating your performance..."):
                 res = do_score(msgs,p["name"])
-                st.session_state["result"]=res; st.session_state["scored"]=True
+            if res:
+                st.session_state[result_key]=res; st.session_state[scored_key]=True
                 if "history" not in st.session_state: st.session_state["history"]=[]
                 st.session_state["history"].append({"persona":p["name"],"score":res["total"],"readiness":res["readiness"],"company":p["company"]})
                 if res["total"]>best: st.session_state["best_score"]=res["total"]
-            st.rerun()
+                st.rerun()
 
-    if st.session_state["scored"] and st.session_state["result"]:
-        res = st.session_state["result"]
+    if st.session_state[scored_key] and st.session_state[result_key]:
+        res = st.session_state[result_key]
         total = res["total"]
         st.markdown("---")
         st.markdown("## 🏆 Your Results")
@@ -609,7 +603,7 @@ elif page == "💬 Practice Session":
         st.info(res.get("summary",""))
         if st.button("🔄 Practice Again",use_container_width=True):
             st.session_state[mkey]=[]; st.session_state[hkey]=[]
-            st.session_state["scored"]=False; st.session_state["result"]=None
+            st.session_state[scored_key]=False; st.session_state[result_key]=None
             st.rerun()
 
 # ── PROGRESS ─────────────────────────────────────
@@ -656,6 +650,21 @@ elif page == "📈 My Progress":
                     c4.metric("💪",f"{v.get('confidence',0)}/25")
                     c5.metric("🎯",f"{v.get('engagement',0)}/25")
                     st.caption(v.get("summary",""))
+    if history or video_history:
+        st.markdown("---")
+        export = {
+            "history": history,
+            "video_history": video_history,
+            "best_score": st.session_state.get("best_score",0),
+        }
+        st.download_button(
+            "⬇️ Export My Progress (JSON)",
+            data=json.dumps(export, indent=2),
+            file_name="capstone_coach_progress.json",
+            mime="application/json",
+            use_container_width=True,
+        )
+        st.caption("⚠️ Session data resets when you refresh the page — export it if you want to keep it.")
 
 # ── ABOUT ─────────────────────────────────────────
 elif page == "ℹ️ About":

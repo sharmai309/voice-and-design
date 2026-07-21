@@ -68,11 +68,21 @@ def get_store() -> _GlobalStore:
 
 
 MAX_STUDENTS = 6
+ROOM_TTL_SECONDS = 2 * 60 * 60
+
+
+def _sweep_stale_rooms(store: "_GlobalStore"):
+    """Drop rooms older than ROOM_TTL_SECONDS. Caller must hold store.lock."""
+    cutoff = time.time() - ROOM_TTL_SECONDS
+    stale = [code for code, room in store.rooms.items() if room.created_at < cutoff]
+    for code in stale:
+        del store.rooms[code]
 
 
 def create_room(room_code: str, host_name: str, zoom_meeting: Optional[dict] = None) -> Room:
     store = get_store()
     with store.lock:
+        _sweep_stale_rooms(store)
         room = Room(code=room_code, host_name=host_name)
         room.students[host_name] = Student(name=host_name)
         room.turn_order.append(host_name)
