@@ -340,6 +340,57 @@ if page == "🏠 Home":
 """, unsafe_allow_html=True)
 
     st.markdown("---")
+    st.markdown('<div class="section-header">See it in action</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-sub">A 30-second look at a real practice exchange — sponsor pushback, your reply, and instant coaching.</div>', unsafe_allow_html=True)
+    st.markdown("""
+<div style="max-width:760px;margin:0 auto;background:white;border:1px solid #F3D9DC;border-radius:20px;padding:24px;box-shadow:0 4px 16px rgba(0,0,0,0.05);">
+  <div style="font-size:0.7rem;font-weight:600;color:#6B7280;letter-spacing:0.1em;margin-bottom:14px;">SAMPLE SESSION · ⏱️ BUSY EXECUTIVE · FASTSHIP LOGISTICS</div>
+  <div style="display:flex;gap:10px;margin-bottom:12px;">
+    <div style="width:34px;height:34px;background:#9F2B3F;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">⏱️</div>
+    <div style="background:#F9FAFB;border-radius:12px;padding:12px 14px;font-size:0.87rem;color:#374151;line-height:1.55;">"I've got 15 minutes. What do you need from me today, and what's the status on the delivery-time model?"</div>
+  </div>
+  <div style="display:flex;gap:10px;margin-bottom:8px;flex-direction:row-reverse;">
+    <div style="width:34px;height:34px;background:#E5E7EB;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">🎓</div>
+    <div style="background:#FBEAEC;border-radius:12px;padding:12px 14px;font-size:0.87rem;color:#374151;line-height:1.55;">"Thanks for the time. Three things today: model results, one data question, and next steps. Our model now predicts delivery windows within 22 minutes on average — down from 41. The data question: can we get access to the driver shift logs?"</div>
+  </div>
+  <div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;padding:10px 12px;font-size:0.8rem;color:#9A3412;margin-bottom:12px;margin-left:44px;">
+    💡 <strong>Live coach:</strong> Great agenda-first opening. Next time, say why you need the shift logs — tie the ask to a business outcome.
+  </div>
+  <div style="display:flex;gap:10px;">
+    <div style="width:34px;height:34px;background:#9F2B3F;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">⏱️</div>
+    <div style="background:#F9FAFB;border-radius:12px;padding:12px 14px;font-size:0.87rem;color:#374151;line-height:1.55;">"22 minutes is solid progress. Shift logs are sensitive — what exactly would you use them for, and what do I get back if I say yes?"</div>
+  </div>
+  <div style="text-align:center;margin-top:16px;font-size:0.8rem;color:#9CA3AF;">Every reply gets a coaching hint like this. After 3+ responses, you can end the meeting and get scored.</div>
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown('<div class="section-header">How your score is calculated</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-sub">Transparent scoring — no black box. An AI evaluator reads your full meeting transcript and scores four dimensions, 25 points each.</div>', unsafe_allow_html=True)
+    score_dims = [
+        ("📋","Preparation","Did you research the sponsor, bring an agenda, and ask informed questions?"),
+        ("🗣️","Communication","Were your responses clear, concise, and professional?"),
+        ("🧭","Meeting Management","Did you open well, keep structure, and close with concrete next steps?"),
+        ("🤝","Relationship Building","Did you listen actively, build rapport, and show empathy?")
+    ]
+    cols = st.columns(4)
+    for idx,(icon,title,desc) in enumerate(score_dims):
+        with cols[idx]:
+            st.markdown(f"""
+<div class="step-card fade-in d{idx+1}">
+  <div style="font-size:1.6rem;margin-bottom:10px;">{icon}</div>
+  <div style="font-size:0.95rem;font-weight:700;color:#111827;margin-bottom:6px;">{title}</div>
+  <div style="font-size:0.82rem;color:#6B7280;line-height:1.5;">{desc}</div>
+  <div style="margin-top:10px;font-size:0.75rem;font-weight:700;color:#9F2B3F;">0–25 pts</div>
+</div>
+""", unsafe_allow_html=True)
+    st.markdown("""
+<div style="max-width:680px;margin:16px auto 0;text-align:center;font-size:0.87rem;color:#6B7280;line-height:1.6;">
+Your four dimension scores add up to a total out of 100. Score <strong>80 or above</strong> and you're <strong style="color:#7A1F2E;">certified meeting-ready</strong> 🎯 — and if you also do a Video Practice session, your content score and body-language score are averaged into a combined score.
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown("---")
     st.markdown('<div class="section-header">Choose Your Sponsor</div>', unsafe_allow_html=True)
     st.markdown('<div class="section-sub">Five AI personas, each with unique behavior, industry context, and difficulty level.</div>', unsafe_allow_html=True)
 
@@ -373,6 +424,11 @@ if page == "🏠 Home":
 elif page == "📹 Video Practice":
     st.markdown('<div class="hero-title" style="font-size:2rem;">📹 Video Practice</div>', unsafe_allow_html=True)
     st.markdown('<div class="section-sub">Record yourself, take a snapshot, and get AI feedback on your body language.</div>', unsafe_allow_html=True)
+    st.markdown("""
+<div style="background:#F0F9FF;border:1px solid #BAE6FD;border-radius:10px;padding:10px 14px;font-size:0.83rem;color:#075985;margin-top:8px;">
+🔒 <strong>Your privacy:</strong> Your video recording never leaves your browser — it's stored locally and only you can download it. Only the single snapshot you choose to take is sent to the AI for analysis, and it isn't saved after your session ends.
+</div>
+""", unsafe_allow_html=True)
     st.markdown("---")
     names = {v["name"]:k for k,v in PERSONAS.items()}
     default = st.session_state.get("pid","mentor")
@@ -553,6 +609,19 @@ elif page == "💬 Practice Session":
     turns = sum(1 for m in msgs if m["role"]=="user")
     if turns>=3 and not st.session_state[scored_key]:
         st.markdown("---")
+        with st.expander("ℹ️ How is my score calculated?"):
+            st.markdown("""
+An AI evaluator reads your **full meeting transcript** and scores four dimensions, each out of 25 points:
+
+| Dimension | What it measures |
+|---|---|
+| 📋 **Preparation** | Research, agenda, informed questions |
+| 🗣️ **Communication** | Clear, concise, professional responses |
+| 🧭 **Meeting Management** | Strong open, structure, concrete next steps |
+| 🤝 **Relationship Building** | Active listening, rapport, empathy |
+
+The four scores add up to a total out of **100**. Score **80+** to be certified meeting-ready. You'll also get specific strengths, improvement areas, and missed opportunities pulled from your actual conversation.
+""")
         if st.button("🏁 End Meeting & Get Score",type="primary",use_container_width=True):
             with st.spinner("Evaluating your performance..."):
                 res = do_score(msgs,p["name"])
@@ -570,6 +639,7 @@ elif page == "💬 Practice Session":
         st.markdown("## 🏆 Your Results")
         color = "green" if total>=80 else "orange" if total>=60 else "red"
         st.markdown(f"### Score: :{color}[{total}/100]")
+        st.caption("Your score = Preparation + Communication + Meeting Management + Relationship Building (25 pts each), judged by an AI evaluator from your full transcript. 80+ = certified meeting-ready.")
         st.progress(total/100)
         if total>=80: st.success("✅ CERTIFIED — You are ready for your real sponsor meeting!")
         elif total>=60: st.warning("⚠️ Almost there — keep practicing.")
