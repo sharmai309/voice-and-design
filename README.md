@@ -125,14 +125,10 @@ Open http://localhost:8501 in your browser.
 
 ## ☁️ Deployed On Streamlit Cloud
 
-### ☁️ Deployed On Streamlit Cloud
+This app is deployed on [Streamlit Cloud](https://share.streamlit.io/) and is publicly accessible.
 
-This app is deployed on Streamlit Cloud. Access is currently restricted.
-
-**Repository:** Private — access by invitation only
-**App:** Restricted to approved viewers
-
-If you'd like access to test the app, please reach out to request an invite.
+**Public URL:** https://voice-and-design-hejgggfxzekbldp5vxp6sh.streamlit.app
+**Repository:** Private — code access by invitation only
 
 ---
 
