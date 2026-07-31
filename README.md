@@ -125,17 +125,14 @@ Open http://localhost:8501 in your browser.
 
 ## ☁️ Deployed On Streamlit Cloud
 
-This app is deployed for free on Streamlit Cloud.
+### ☁️ Deployed On Streamlit Cloud
 
-**Public URL:** https://voice-and-design-hejgggfxzekbldp5vxp6sh.streamlit.app
+This app is deployed on Streamlit Cloud. Access is currently restricted.
 
-To deploy your own copy:
-1. Fork this repo
-2. Go to https://share.streamlit.io
-3. Connect your GitHub repo
-4. Set main file to pp.py
-5. Add your API keys in Advanced Settings → Secrets
-6. Click Deploy
+**Repository:** Private — access by invitation only
+**App:** Restricted to approved viewers
+
+If you'd like access to test the app, please reach out to request an invite.
 
 ---
 
