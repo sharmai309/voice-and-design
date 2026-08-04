@@ -74,6 +74,22 @@ button[data-testid="stBaseButton-primary"] * { color: #ffffff !important; }
 div[data-testid="stAlert"], div[data-testid="stAlert"] * { color: #1F2937 !important; opacity: 1 !important; }
 section[data-testid="stMain"] h1, section[data-testid="stMain"] h2, section[data-testid="stMain"] h3, section[data-testid="stMain"] h4, section[data-testid="stMain"] h5, section[data-testid="stMain"] h6, section[data-testid="stMain"] p, section[data-testid="stMain"] li, section[data-testid="stMain"] strong, section[data-testid="stMain"] em, section.main h1, section.main h2, section.main h3, section.main h4, section.main p, section.main li, section.main strong, section.main em { color: #111827 !important; opacity: 1 !important; }
 [data-testid="stMetricLabel"], [data-testid="stMetricLabel"] *, [data-testid="stMetricValue"], [data-testid="stMetricValue"] * { color: #111827 !important; opacity: 1 !important; }
+
+[data-testid="stBaseButton-secondary"] {
+  background-color: #F3F4F6 !important;
+  border: 1px solid #D1D5DB !important;
+}
+[data-testid="stBaseButton-secondary"], [data-testid="stBaseButton-secondary"] * {
+  color: #111827 !important;
+  font-weight: 700 !important;
+}
+[data-testid="stBaseButton-primary"] {
+  background: linear-gradient(135deg, #7A1F2E, #B3273A) !important;
+}
+[data-testid="stBaseButton-primary"], [data-testid="stBaseButton-primary"] * {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
 </style>
 """
 
