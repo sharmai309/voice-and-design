@@ -395,7 +395,7 @@ Privacy: Your full video is only used to extract a few frames for analysis. Fram
     with col1:
         st.markdown("#### Step 1 — Record Your Session")
         st.info("Look at camera - Good lighting - Sit upright - Professional background")
-        st.components.v1.html(VIDEO_HTML, height=520)
+        st.components.v1.html(VIDEO_HTML, height=850)
     with col2:
         st.markdown("#### Step 2 — Upload Recording for Analysis")
         st.caption("After stopping, download your recording (button under the video), then upload it here. Frames are extracted automatically — no manual snapshots needed.")
