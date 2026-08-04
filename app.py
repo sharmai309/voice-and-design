@@ -14,7 +14,7 @@ def get_client():
     except Exception:
         key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not key:
-        st.error("⚠️ ANTHROPIC_API_KEY is not set. Add it to .streamlit/secrets.toml or your environment.")
+        st.error("⚠️ ANTHROPIC_API_KEY is not set.")
     return Anthropic(api_key=key)
 
 def get_openai_client():
@@ -24,7 +24,7 @@ def get_openai_client():
     except Exception:
         key = os.environ.get("OPENAI_API_KEY", "")
     if not key:
-        st.error("⚠️ OPENAI_API_KEY is not set. Add it to .streamlit/secrets.toml or your environment.")
+        st.error("⚠️ OPENAI_API_KEY is not set.")
     return OpenAI(api_key=key)
 
 def extract_json(raw):
@@ -56,18 +56,10 @@ PERSONAS = {
 DIFF_CLASS = {1:"diff-1",2:"diff-2",3:"diff-3",4:"diff-4",5:"diff-5"}
 
 SCENARIOS = {
-    "initial": {"name":"Initial Meeting / Problem Definition","icon":"🧭",
-        "desc":"First meeting with your sponsor — introduce the team and nail down the problem you're solving.",
-        "context":"MEETING SCENARIO — INITIAL MEETING / PROBLEM DEFINITION: This is the team's first meeting with you. Steer the conversation toward understanding the problem statement, business context, and what success looks like. Ask why this problem matters now and who is affected."},
-    "scope": {"name":"Scope","icon":"📐",
-        "desc":"Define what's in and out of scope for the project, deliverables, and constraints.",
-        "context":"MEETING SCENARIO — SCOPE: This meeting is about defining scope. Steer the conversation toward what is and isn't included in the project, deliverables, timeline, and constraints. Push back if the team's scope sounds too broad, too vague, or unbounded."},
-    "data": {"name":"Data","icon":"🗄️",
-        "desc":"Discuss data sources, access, quality, and privacy/security constraints.",
-        "context":"MEETING SCENARIO — DATA: This meeting is about data. Steer the conversation toward what data sources are available, how the team will access them, data quality concerns, and any privacy/security constraints. Ask pointed questions about data readiness."},
-    "progress": {"name":"Progress Summary","icon":"📈",
-        "desc":"Give a progress update — what's done, what's blocked, what's next.",
-        "context":"MEETING SCENARIO — PROGRESS SUMMARY: This meeting is a status update. Expect the team to report what they've completed, what's blocked, and next steps. Ask about timeline risk and whether the project is on track."},
+    "initial": {"name":"Initial Meeting / Problem Definition","icon":"🧭","desc":"First meeting with your sponsor — introduce the team and nail down the problem you're solving.","context":"MEETING SCENARIO — INITIAL MEETING / PROBLEM DEFINITION: This is the team's first meeting with you. Steer the conversation toward understanding the problem statement, business context, and what success looks like. Ask why this problem matters now and who is affected."},
+    "scope": {"name":"Scope","icon":"📐","desc":"Define what's in and out of scope for the project, deliverables, and constraints.","context":"MEETING SCENARIO — SCOPE: This meeting is about defining scope. Steer the conversation toward what is and isn't included in the project, deliverables, timeline, and constraints. Push back if the team's scope sounds too broad, too vague, or unbounded."},
+    "data": {"name":"Data","icon":"🗄️","desc":"Discuss data sources, access, quality, and privacy/security constraints.","context":"MEETING SCENARIO — DATA: This meeting is about data. Steer the conversation toward what data sources are available, how the team will access them, data quality concerns, and any privacy/security constraints. Ask pointed questions about data readiness."},
+    "progress": {"name":"Progress Summary","icon":"📈","desc":"Give a progress update — what's done, what's blocked, what's next.","context":"MEETING SCENARIO — PROGRESS SUMMARY: This meeting is a status update. Expect the team to report what they've completed, what's blocked, and next steps. Ask about timeline risk and whether the project is on track."},
 }
 
 SCORE_PROMPT = """Evaluate this Capstone sponsor meeting. Score 0-25 each (total 100):
@@ -121,7 +113,7 @@ async function startRecording(){
       document.getElementById("previewEl").src=url;
       document.getElementById("downloadLink").href=url;
       document.getElementById("previewDiv").style.display="block";
-      document.getElementById("status").textContent="✅ Done! Download or take a snapshot for AI analysis.";
+      document.getElementById("status").textContent="✅ Done! Download your recording.";
     };
     mediaRecorder.start(1000);
     seconds=0;
@@ -214,11 +206,9 @@ def do_score(msgs, pname):
 def handle_user_message(user_text, msgs, hints, mkey, hkey, system_prompt, voice_on):
     msgs.append({"role": "user", "content": user_text})
     client = get_client()
-
     def _reply_task():
         return client.messages.create(model="claude-sonnet-4-6", max_tokens=500,
             system=system_prompt, messages=msgs)
-
     with ThreadPoolExecutor(max_workers=2) as ex:
         hint_future = ex.submit(get_hint, client, user_text)
         reply_future = ex.submit(_reply_task)
@@ -226,16 +216,13 @@ def handle_user_message(user_text, msgs, hints, mkey, hkey, system_prompt, voice
         try:
             reply = reply_future.result().content[0].text
         except Exception as e:
-            reply = None
-            reply_err = e
+            reply = None; reply_err = e
         else:
             reply_err = None
-
     if hint_err:
         st.warning(f"Hint unavailable: {hint_err}")
     hints.append(hint)
     st.session_state[hkey] = hints
-
     if reply_err:
         st.error(f"Sponsor reply failed: {reply_err}")
     else:
@@ -245,8 +232,6 @@ def handle_user_message(user_text, msgs, hints, mkey, hkey, system_prompt, voice
             st.session_state["pending_tts"] = reply
     st.rerun()
 
-# Play any sponsor TTS queued by the previous turn, now that the rerun has
-# completed — rendering it before the rerun would wipe the <audio> element.
 if st.session_state.get("pending_tts"):
     speak_text(st.session_state.pop("pending_tts"))
 
@@ -254,7 +239,6 @@ if st.session_state.get("pending_tts"):
 sidebar_brand()
 st.sidebar.markdown("---")
 
-# ── KEY FIX: Navigation with session state ────────
 PAGE_OPTIONS = ["🏠 Home","💬 Practice Session","📹 Video Practice","📈 My Progress","ℹ️ About"]
 if "current_page" not in st.session_state:
     st.session_state["current_page"] = "🏠 Home"
@@ -283,229 +267,6 @@ def go_to(page_name, persona_id=None):
     if persona_id:
         st.session_state["pid"] = persona_id
     st.rerun()
-
-# ── HOME ─────────────────────────────────────────
-if page == "🏠 Home":
-    col1, col2 = st.columns([3,2])
-    with col1:
-        st.markdown('<div class="hero-label fade-in">AI-Powered Practice for UChicago Capstone</div>', unsafe_allow_html=True)
-        st.markdown('<div class="hero-title fade-in d1">Practice that feels real.<br>Results that are.</div>', unsafe_allow_html=True)
-        st.markdown('<div class="hero-sub fade-in d2">Practice your sponsor meetings with AI personas, get live coaching after every message, record your body language, and get certified meeting-ready — before the real thing.</div>', unsafe_allow_html=True)
-        c1,c2,c3 = st.columns(3)
-        with c1:
-            if st.button("💬 Start Practicing", use_container_width=True, type="primary"):
-                go_to("💬 Practice Session", "mentor")
-        with c2:
-            if st.button("📹 Video Practice", use_container_width=True):
-                go_to("📹 Video Practice")
-    with col2:
-        st.markdown("""
-<div style="background:linear-gradient(135deg,#FBEAEC,#F7DEE1);border-radius:20px;padding:24px;margin-top:16px;">
-  <div style="font-size:0.7rem;font-weight:600;color:#6B7280;letter-spacing:0.1em;margin-bottom:12px;">LIVE PRACTICE SESSION</div>
-  <div style="background:white;border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-      <div style="width:36px;height:36px;background:#9F2B3F;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;">🔍</div>
-      <div>
-        <div style="font-size:0.85rem;font-weight:600;color:#111827;">Dr. Raj Patel</div>
-        <div style="font-size:0.75rem;color:#9CA3AF;">CDO at Verizon · Skeptical</div>
-      </div>
-    </div>
-    <div style="font-size:0.85rem;color:#374151;line-height:1.5;">"You're solving before diagnosing the problem. What data supports that assumption?"</div>
-  </div>
-  <div style="background:#FBEAEC;border-radius:10px;padding:10px 12px;font-size:0.8rem;color:#7A1F2E;">
-    💡 <strong>Hint:</strong> Back up your claim with a specific data point or source.
-  </div>
-</div>
-""", unsafe_allow_html=True)
-
-    st.markdown("---")
-    st.markdown('<div class="section-header">How it works</div>', unsafe_allow_html=True)
-    st.markdown('<div class="section-sub">Four steps from practice to certified meeting-ready.</div>', unsafe_allow_html=True)
-
-    steps = [
-        ("1","Choose a persona","Pick from 5 AI sponsor types — from supportive mentor to tough skeptic. Each has a real company, real constraints, real pushback."),
-        ("2","Practice the meeting","Type or speak your responses. The sponsor stays in character and challenges you like a real meeting would."),
-        ("3","Get live coaching","After every single message, an AI coach gives you a one-line hint on what to improve immediately."),
-        ("4","Record & analyze","Film yourself during practice. AI analyzes your eye contact, confidence, engagement, and professionalism.")
-    ]
-    cols = st.columns(4)
-    for idx,(num,title,desc) in enumerate(steps):
-        with cols[idx]:
-            st.markdown(f"""
-<div class="step-card fade-in d{idx+1}">
-  <div style="width:44px;height:44px;background:linear-gradient(135deg,#7A1F2E,#B3273A);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:1.1rem;margin:0 auto 14px;">{num}</div>
-  <div style="font-size:1rem;font-weight:700;color:#111827;margin-bottom:8px;">{title}</div>
-  <div style="font-size:0.85rem;color:#6B7280;line-height:1.5;">{desc}</div>
-</div>
-""", unsafe_allow_html=True)
-
-    st.markdown("---")
-    st.markdown('<div class="section-header">See it in action</div>', unsafe_allow_html=True)
-    st.markdown('<div class="section-sub">A 30-second look at a real practice exchange — sponsor pushback, your reply, and instant coaching.</div>', unsafe_allow_html=True)
-    st.markdown("""
-<div style="max-width:760px;margin:0 auto;background:white;border:1px solid #F3D9DC;border-radius:20px;padding:24px;box-shadow:0 4px 16px rgba(0,0,0,0.05);">
-  <div style="font-size:0.7rem;font-weight:600;color:#6B7280;letter-spacing:0.1em;margin-bottom:14px;">SAMPLE SESSION · ⏱️ BUSY EXECUTIVE · FASTSHIP LOGISTICS</div>
-  <div style="display:flex;gap:10px;margin-bottom:12px;">
-    <div style="width:34px;height:34px;background:#9F2B3F;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">⏱️</div>
-    <div style="background:#F9FAFB;border-radius:12px;padding:12px 14px;font-size:0.87rem;color:#374151;line-height:1.55;">"I've got 15 minutes. What do you need from me today, and what's the status on the delivery-time model?"</div>
-  </div>
-  <div style="display:flex;gap:10px;margin-bottom:8px;flex-direction:row-reverse;">
-    <div style="width:34px;height:34px;background:#E5E7EB;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">🎓</div>
-    <div style="background:#FBEAEC;border-radius:12px;padding:12px 14px;font-size:0.87rem;color:#374151;line-height:1.55;">"Thanks for the time. Three things today: model results, one data question, and next steps. Our model now predicts delivery windows within 22 minutes on average — down from 41. The data question: can we get access to the driver shift logs?"</div>
-  </div>
-  <div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;padding:10px 12px;font-size:0.8rem;color:#9A3412;margin-bottom:12px;margin-left:44px;">
-    💡 <strong>Live coach:</strong> Great agenda-first opening. Next time, say why you need the shift logs — tie the ask to a business outcome.
-  </div>
-  <div style="display:flex;gap:10px;">
-    <div style="width:34px;height:34px;background:#9F2B3F;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">⏱️</div>
-    <div style="background:#F9FAFB;border-radius:12px;padding:12px 14px;font-size:0.87rem;color:#374151;line-height:1.55;">"22 minutes is solid progress. Shift logs are sensitive — what exactly would you use them for, and what do I get back if I say yes?"</div>
-  </div>
-  <div style="text-align:center;margin-top:16px;font-size:0.8rem;color:#9CA3AF;">Every reply gets a coaching hint like this. After 3+ responses, you can end the meeting and get scored.</div>
-</div>
-""", unsafe_allow_html=True)
-
-    st.markdown("---")
-    st.markdown('<div class="section-header">How your score is calculated</div>', unsafe_allow_html=True)
-    st.markdown('<div class="section-sub">Transparent scoring — no black box. An AI evaluator reads your full meeting transcript and scores four dimensions, 25 points each.</div>', unsafe_allow_html=True)
-    score_dims = [
-        ("📋","Preparation","Did you research the sponsor, bring an agenda, and ask informed questions?"),
-        ("🗣️","Communication","Were your responses clear, concise, and professional?"),
-        ("🧭","Meeting Management","Did you open well, keep structure, and close with concrete next steps?"),
-        ("🤝","Relationship Building","Did you listen actively, build rapport, and show empathy?")
-    ]
-    cols = st.columns(4)
-    for idx,(icon,title,desc) in enumerate(score_dims):
-        with cols[idx]:
-            st.markdown(f"""
-<div class="step-card fade-in d{idx+1}">
-  <div style="font-size:1.6rem;margin-bottom:10px;">{icon}</div>
-  <div style="font-size:0.95rem;font-weight:700;color:#111827;margin-bottom:6px;">{title}</div>
-  <div style="font-size:0.82rem;color:#6B7280;line-height:1.5;">{desc}</div>
-  <div style="margin-top:10px;font-size:0.75rem;font-weight:700;color:#9F2B3F;">0–25 pts</div>
-</div>
-""", unsafe_allow_html=True)
-    st.markdown("""
-<div style="max-width:680px;margin:16px auto 0;text-align:center;font-size:0.87rem;color:#6B7280;line-height:1.6;">
-Your four dimension scores add up to a total out of 100. Score <strong>80 or above</strong> and you're <strong style="color:#7A1F2E;">certified meeting-ready</strong> 🎯 — and if you also do a Video Practice session, your content score and body-language score are averaged into a combined score.
-</div>
-""", unsafe_allow_html=True)
-
-    st.markdown("---")
-    st.markdown('<div class="section-header">Choose Your Sponsor</div>', unsafe_allow_html=True)
-    st.markdown('<div class="section-sub">Five AI personas, each with unique behavior, industry context, and difficulty level.</div>', unsafe_allow_html=True)
-
-    cols = st.columns(5)
-    for idx,(pid,p) in enumerate(PERSONAS.items()):
-        with cols[idx]:
-            st.markdown(f"""
-<div class="persona-card fade-in d{(idx % 6) + 1}">
-  <div class="persona-icon">{p['icon']}</div>
-  <div class="persona-name">{p['name']}</div>
-  <div class="persona-company">🏢 {p['company']}</div>
-  <div class="persona-desc">{p['desc']}</div>
-  <span class="difficulty-badge {DIFF_CLASS[p['difficulty']]}">{p['diff_label']}</span>
-</div>
-""", unsafe_allow_html=True)
-            if st.button("Practice →", key=f"h_{pid}", use_container_width=True):
-                go_to("💬 Practice Session", pid)
-
-    st.markdown("---")
-    with st.container(key="cta_banner"):
-        st.markdown("""
-<div class="cta-card">
-  <div style="font-size:2rem;font-weight:800;margin-bottom:12px;">Ready to practice?</div>
-  <div style="font-size:1rem;opacity:0.9;">Hit 80/100 to get certified meeting-ready. Start with the Mentor Sponsor.</div>
-</div>
-""", unsafe_allow_html=True)
-        if st.button("🌱 Start with Mentor Sponsor", use_container_width=True, type="primary"):
-            go_to("💬 Practice Session", "mentor")
-
-# ── VIDEO PRACTICE ────────────────────────────────
-elif page == "📹 Video Practice":
-    st.markdown('<div class="hero-title" style="font-size:2rem;">📹 Video Practice</div>', unsafe_allow_html=True)
-    st.markdown('<div class="section-sub">Record yourself, take a snapshot, and get AI feedback on your body language.</div>', unsafe_allow_html=True)
-    st.markdown("""
-<div style="background:#F0F9FF;border:1px solid #BAE6FD;border-radius:10px;padding:10px 14px;font-size:0.83rem;color:#075985;margin-top:8px;">
-🔒 <strong>Your privacy:</strong> Your video recording never leaves your browser — it's stored locally and only you can download it. Only the single snapshot you choose to take is sent to the AI for analysis, and it isn't saved after your session ends.
-</div>
-""", unsafe_allow_html=True)
-    st.markdown("---")
-    names = {v["name"]:k for k,v in PERSONAS.items()}
-    default = st.session_state.get("pid","mentor")
-    sel = st.selectbox("Choose your sponsor", list(names.keys()),
-        index=list(names.keys()).index(PERSONAS[default]["name"]))
-    pid = names[sel]
-    p = PERSONAS[pid]
-    st.markdown("---")
-    col1, col2 = st.columns([3,2])
-    with col1:
-        st.markdown("#### 🎬 Step 1 — Record Your Session")
-        st.info("💡 Look at camera · Good lighting · Sit upright · Professional background")
-        st.components.v1.html(VIDEO_HTML, height=500)
-    with col2:
-        st.markdown("#### 📸 Step 2 — Take Snapshot for Analysis")
-        img_file = st.camera_input("Take a photo now")
-        if img_file:
-            st.session_state["snapshot"] = img_file.getvalue()
-    st.markdown("---")
-    if st.session_state.get("snapshot"):
-        if st.button("🤖 Give Analysis for Facial Expression", type="primary", use_container_width=True):
-            with st.spinner("🔍 Analyzing your facial expressions, eye contact, and body language..."):
-                result = analyze_facial_expression(st.session_state["snapshot"])
-            if result:
-                st.session_state["facial_result"] = result
-                st.session_state["facial_timestamp"] = time.strftime("%Y-%m-%d %H:%M")
-                st.rerun()
-            else:
-                st.error("Analysis failed — check your API key.")
-    else:
-        st.info("👆 Take a snapshot above to unlock the AI analysis button.")
-    if st.session_state.get("facial_result"):
-        result = st.session_state["facial_result"]
-        total = result.get("total",0)
-        st.markdown("---")
-        st.markdown("## 😊 Body Language Report")
-        color = "green" if total>=80 else "orange" if total>=60 else "red"
-        st.markdown(f"### Score: :{color}[{total}/100]")
-        st.progress(total/100)
-        if total>=80: st.success("✅ Excellent! You look confident and professional.")
-        elif total>=60: st.warning("⚠️ Good effort — a few tweaks will help a lot.")
-        else: st.error("❌ Needs work before the real meeting.")
-        st.markdown("---")
-        ec,cf,en,pr = result.get("eye_contact",0),result.get("confidence",0),result.get("engagement",0),result.get("professionalism",0)
-        c1,c2,c3,c4 = st.columns(4)
-        c1.metric("👁️ Eye Contact",f"{ec}/25",delta="Good" if ec>=20 else "Needs work")
-        c2.metric("💪 Confidence",f"{cf}/25",delta="Good" if cf>=20 else "Needs work")
-        c3.metric("🎯 Engagement",f"{en}/25",delta="Good" if en>=20 else "Needs work")
-        c4.metric("👔 Professionalism",f"{pr}/25",delta="Good" if pr>=20 else "Needs work")
-        st.markdown("---")
-        col1,col2 = st.columns(2)
-        with col1:
-            st.markdown("#### ✅ What You Did Well")
-            for o in result.get("observations",[]): st.success(o)
-            st.markdown("#### ⚡ Quick Wins")
-            for q in result.get("quick_wins",[]): st.info(q)
-        with col2:
-            st.markdown("#### ⚠️ Improve")
-            for i in result.get("improvements",[]): st.warning(i)
-            st.markdown("#### 💡 Tips")
-            if ec<20: st.markdown("**👁️** Look at your camera lens, not your own face on screen.")
-            if cf<20: st.markdown("**💪** Sit up straight, take a breath, speak at a steady pace.")
-            if en<20: st.markdown("**🎯** Nod occasionally, lean slightly forward, smile naturally.")
-            if pr<20: st.markdown("**👔** Clean background, front lighting, dress professionally.")
-        st.markdown("---")
-        st.info(f"**Overall:** {result.get('summary','')}")
-        col1,col2 = st.columns(2)
-        with col1:
-            if st.button("💾 Save to My Progress", use_container_width=True):
-                if "video_history" not in st.session_state: st.session_state["video_history"]=[]
-                st.session_state["video_history"].append({"persona":p["name"],"score":total,"eye_contact":ec,"confidence":cf,"engagement":en,"professionalism":pr,"summary":result.get("summary",""),"timestamp":st.session_state.get("facial_timestamp","")})
-                st.success("✅ Saved!")
-        with col2:
-            if st.button("🔄 Analyze Again", use_container_width=True):
-                st.session_state["facial_result"]=None
-                st.session_state["snapshot"]=None
-                st.rerun()
 
 # ── PRACTICE SESSION ─────────────────────────────
 elif page == "💬 Practice Session":
@@ -588,7 +349,6 @@ elif page == "💬 Practice Session":
             st.markdown("### 💡 Recent Hints")
             for h in hints[-3:]:
                 st.markdown(f'<div class="hint-bubble">{h}</div>', unsafe_allow_html=True)
-
     if not st.session_state[scored_key]:
         st.markdown("---")
         st.markdown("#### 🎙️ Record your voice")
@@ -605,7 +365,6 @@ elif page == "💬 Practice Session":
         st.markdown("#### ✍️ Or type your message")
         if prompt := st.chat_input("Type your message to the sponsor..."):
             handle_user_message(prompt, msgs, hints, mkey, hkey, system_prompt, voice_on)
-
     turns = sum(1 for m in msgs if m["role"]=="user")
     if turns>=3 and not st.session_state[scored_key]:
         st.markdown("---")
@@ -620,7 +379,7 @@ An AI evaluator reads your **full meeting transcript** and scores four dimension
 | 🧭 **Meeting Management** | Strong open, structure, concrete next steps |
 | 🤝 **Relationship Building** | Active listening, rapport, empathy |
 
-The four scores add up to a total out of **100**. Score **80+** to be certified meeting-ready. You'll also get specific strengths, improvement areas, and missed opportunities pulled from your actual conversation.
+Score **80+** to be certified meeting-ready.
 """)
         if st.button("🏁 End Meeting & Get Score",type="primary",use_container_width=True):
             with st.spinner("Evaluating your performance..."):
@@ -631,7 +390,6 @@ The four scores add up to a total out of **100**. Score **80+** to be certified 
                 st.session_state["history"].append({"persona":p["name"],"score":res["total"],"readiness":res["readiness"],"company":p["company"]})
                 if res["total"]>best: st.session_state["best_score"]=res["total"]
                 st.rerun()
-
     if st.session_state[scored_key] and st.session_state[result_key]:
         res = st.session_state[result_key]
         total = res["total"]
@@ -639,7 +397,7 @@ The four scores add up to a total out of **100**. Score **80+** to be certified 
         st.markdown("## 🏆 Your Results")
         color = "green" if total>=80 else "orange" if total>=60 else "red"
         st.markdown(f"### Score: :{color}[{total}/100]")
-        st.caption("Your score = Preparation + Communication + Meeting Management + Relationship Building (25 pts each), judged by an AI evaluator from your full transcript. 80+ = certified meeting-ready.")
+        st.caption("Your score = Preparation + Communication + Meeting Management + Relationship Building (25 pts each). 80+ = certified meeting-ready.")
         st.progress(total/100)
         if total>=80: st.success("✅ CERTIFIED — You are ready for your real sponsor meeting!")
         elif total>=60: st.warning("⚠️ Almost there — keep practicing.")
@@ -722,18 +480,8 @@ elif page == "📈 My Progress":
                     st.caption(v.get("summary",""))
     if history or video_history:
         st.markdown("---")
-        export = {
-            "history": history,
-            "video_history": video_history,
-            "best_score": st.session_state.get("best_score",0),
-        }
-        st.download_button(
-            "⬇️ Export My Progress (JSON)",
-            data=json.dumps(export, indent=2),
-            file_name="capstone_coach_progress.json",
-            mime="application/json",
-            use_container_width=True,
-        )
+        export = {"history":history,"video_history":video_history,"best_score":st.session_state.get("best_score",0)}
+        st.download_button("⬇️ Export My Progress (JSON)",data=json.dumps(export,indent=2),file_name="capstone_coach_progress.json",mime="application/json",use_container_width=True)
         st.caption("⚠️ Session data resets when you refresh the page — export it if you want to keep it.")
 
 # ── ABOUT ─────────────────────────────────────────
@@ -742,22 +490,21 @@ elif page == "ℹ️ About":
     st.markdown("---")
     st.markdown("""
 ## 🎓 Capstone Coach
-AI-powered sponsor meeting simulator for UChicago ADS Capstone students — practice with AI personas, live coaching, and full team assessment before the real thing.
+AI-powered sponsor meeting simulator for UChicago ADS Capstone students.
 
 ### Features
 - 🗂️ Meeting scenario picker — Initial Meeting, Scope, Data, Progress Summary
-- 💬 Text chat with AI sponsor personas
-- 🎙️ Voice record button — speak to your sponsor
+- 💬 Text chat with 5 AI sponsor personas
+- 🎙️ Voice input — speak to your sponsor
 - 🔊 Sponsor speaks back with OpenAI TTS
-- 📹 Record your interview practice session
-- 😊 AI analyzes facial expressions and body language
+- 📹 Auto-snapshot video analysis — snapshots captured every 10s during recording, averaged by Claude Vision
 - 💡 Live coaching hints after every message
 - 📊 Combined content + body language score
-- 👥 Zoom-integrated Group Practice Call — assess every team member
+- 👥 Group Practice Call
 - 🏆 Get certified meeting-ready at 80+
 
 ### Tech Stack
-Streamlit · Claude API · OpenAI Whisper · OpenAI TTS · Claude Vision · Zoom API
+Streamlit · Claude API · OpenAI Whisper · OpenAI TTS · Claude Vision
 
 ### Built For
 UChicago Master of Applied Data Science — Capstone Program
