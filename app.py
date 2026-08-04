@@ -1,4 +1,4 @@
-﻿import streamlit as st
+import streamlit as st
 import os, json, base64, time, re
 from concurrent.futures import ThreadPoolExecutor
 from anthropic import Anthropic
@@ -374,7 +374,7 @@ if page == "🏠 Home":
         if st.button("Start with Mentor Sponsor", use_container_width=True, type="primary"):
             go_to("💬 Practice Session", "mentor")
 
-﻿# ── VIDEO PRACTICE ────────────────────────────────
+# ── VIDEO PRACTICE ────────────────────────────────
 elif page == "📹 Video Practice":
     st.markdown('<div class="hero-title" style="font-size:2rem;">Video Practice</div>', unsafe_allow_html=True)
     st.markdown('<div class="section-sub">Record your session, then extract frames from the video automatically and get AI feedback averaged across your whole recording.</div>', unsafe_allow_html=True)
