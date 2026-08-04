@@ -180,6 +180,38 @@ div[data-testid="stAlert"] span {
 :root {
   color-scheme: light !important;
 }
+
+/* ---------- New Session buttons: solid black with white text ---------- */
+.st-key-new_session_btn_1 button,
+.st-key-new_session_btn_2 button {
+  background-color: #000000 !important;
+  border: none !important;
+}
+.st-key-new_session_btn_1 button *,
+.st-key-new_session_btn_2 button * {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+.st-key-new_session_btn_1 button:hover,
+.st-key-new_session_btn_2 button:hover {
+  background-color: #1a1a1a !important;
+}
+
+/* ---------- General font size increase for readability ---------- */
+.block-container p,
+.block-container li,
+.block-container span,
+.block-container div[data-testid="stMarkdownContainer"] {
+  font-size: 1.05rem !important;
+  line-height: 1.6 !important;
+}
+[data-testid="stChatMessageContent"] p {
+  font-size: 1.05rem !important;
+  line-height: 1.65 !important;
+}
+[data-testid="stWidgetLabel"] p {
+  font-size: 1rem !important;
+}
 </style>
 """
 

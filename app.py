@@ -518,7 +518,7 @@ Privacy: Your full video is only used to extract a few frames for analysis. Fram
                 st.session_state["video_history"].append({"persona":p["name"],"score":total,"eye_contact":ec,"confidence":cf,"engagement":en,"professionalism":pr,"summary":result.get("summary",""),"timestamp":st.session_state.get("facial_timestamp","")})
                 st.success("Saved!")
         with col2:
-            if st.button("New Session", use_container_width=True):
+            if st.button("New Session", use_container_width=True, key="new_session_btn_1"):
                 st.session_state["facial_result"]=None
                 st.session_state["extracted_frames"]=None
                 st.rerun()
@@ -563,7 +563,7 @@ elif page == "💬 Practice Session":
     hints = st.session_state[hkey]
     c1,c2 = st.columns([1,4])
     with c1:
-        if st.button("New Session"):
+        if st.button("New Session", key="new_session_btn_2"):
             st.session_state[mkey]=[]; st.session_state[hkey]=[]
             st.session_state[scored_key]=False; st.session_state[result_key]=None
             st.rerun()
