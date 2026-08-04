@@ -374,14 +374,13 @@ if page == "🏠 Home":
         if st.button("Start with Mentor Sponsor", use_container_width=True, type="primary"):
             go_to("💬 Practice Session", "mentor")
 
-# ── VIDEO PRACTICE ────────────────────────────────
+﻿# ── VIDEO PRACTICE ────────────────────────────────
 elif page == "📹 Video Practice":
-    from streamlit_autorefresh import st_autorefresh
     st.markdown('<div class="hero-title" style="font-size:2rem;">Video Practice</div>', unsafe_allow_html=True)
-    st.markdown('<div class="section-sub">Start recording — snapshots are captured automatically every 10 seconds. Stop when done, then analyze all snapshots at once.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-sub">Record your session, then extract frames from the video automatically and get AI feedback averaged across your whole recording.</div>', unsafe_allow_html=True)
     st.markdown("""
 <div style="background:#F0F9FF;border:1px solid #BAE6FD;border-radius:10px;padding:10px 14px;font-size:0.83rem;color:#075985;margin-top:8px;">
-Privacy: Your video never leaves your browser. Only the auto-captured snapshots are sent to Claude for analysis, and they are not saved after your session ends.
+Privacy: Your full video is only used to extract a few frames for analysis. Frames are sent to Claude for analysis and are not saved after your session ends.
 </div>
 """, unsafe_allow_html=True)
     st.markdown("---")
@@ -391,105 +390,89 @@ Privacy: Your video never leaves your browser. Only the auto-captured snapshots 
         index=list(names.keys()).index(PERSONAS[default]["name"]))
     pid = names[sel]
     p = PERSONAS[pid]
-    if "snapshots" not in st.session_state:
-        st.session_state["snapshots"] = []
-    if "recording_active" not in st.session_state:
-        st.session_state["recording_active"] = False
-    st.markdown("---")
-    col_ctrl1, col_ctrl2, col_ctrl3 = st.columns([2,2,3])
-    with col_ctrl1:
-        if not st.session_state["recording_active"]:
-            if st.button("Start Recording and Auto-Capture", type="primary", use_container_width=True):
-                st.session_state["recording_active"] = True
-                st.session_state["snapshots"] = []
-                st.session_state["facial_result"] = None
-                st.rerun()
-    with col_ctrl2:
-        if st.session_state["recording_active"]:
-            if st.button("Stop Recording", use_container_width=True):
-                st.session_state["recording_active"] = False
-                st.rerun()
-    with col_ctrl3:
-        n = len(st.session_state["snapshots"])
-        if st.session_state["recording_active"]:
-            st.info(f"Recording... {n}/5 snapshots captured (auto every 10s)")
-        elif n > 0:
-            st.success(f"{n} snapshot{'s' if n>1 else ''} ready for analysis")
-    if st.session_state["recording_active"]:
-        st_autorefresh(interval=10000, limit=None, key="snap_refresh")
     st.markdown("---")
     col1, col2 = st.columns([3,2])
     with col1:
-        st.markdown("#### Camera Feed and Recording")
+        st.markdown("#### Step 1 — Record Your Session")
         st.info("Look at camera - Good lighting - Sit upright - Professional background")
-        st.components.v1.html(VIDEO_HTML, height=500)
+        st.components.v1.html(VIDEO_HTML, height=520)
     with col2:
-        st.markdown("#### Auto-Captured Snapshots")
-        snapshots = st.session_state["snapshots"]
-        n = len(snapshots)
-        if st.session_state["recording_active"] and n < 5:
-            st.caption(f"Auto-capturing every 10s... ({n}/5 so far)")
-            img_file = st.camera_input(
-                "Live snapshot",
-                key=f"auto_cam_{n}_{int(time.time()//10)}",
-                label_visibility="collapsed"
-            )
-            if img_file:
-                current_bytes = img_file.getvalue()
-                if not snapshots or current_bytes != snapshots[-1]:
-                    st.session_state["snapshots"].append(current_bytes)
-                    st.rerun()
-        elif n >= 5:
-            st.success("5/5 snapshots captured - stop recording and analyze!")
-        elif not st.session_state["recording_active"] and n == 0:
-            st.caption("Press Start Recording above - snapshots will appear here automatically every 10 seconds.")
-        if snapshots:
-            st.markdown(f"**{len(snapshots)} snapshot{'s' if len(snapshots)>1 else ''} captured:**")
-            cols_t = st.columns(min(len(snapshots), 5))
-            for i, snap in enumerate(snapshots):
-                with cols_t[i]:
-                    st.image(snap, caption=f"#{i+1}", use_container_width=True)
-            if st.button("Clear and Start Over", use_container_width=True):
-                st.session_state["snapshots"] = []
-                st.session_state["facial_result"] = None
-                st.session_state["recording_active"] = False
-                st.rerun()
-    st.markdown("---")
-    snapshots = st.session_state["snapshots"]
-    if snapshots and not st.session_state["recording_active"]:
-        st.markdown(f"#### Analyze {len(snapshots)} Snapshot{'s' if len(snapshots)>1 else ''}")
-        st.caption("Claude Vision analyzes each snapshot and averages scores for a more accurate body language assessment.")
-        if st.button(f"Analyze All {len(snapshots)} Snapshot{'s' if len(snapshots)>1 else ''}", type="primary", use_container_width=True):
-            with st.spinner(f"Analyzing {len(snapshots)} snapshot{'s' if len(snapshots)>1 else ''} in parallel..."):
-                with ThreadPoolExecutor(max_workers=5) as ex:
-                    results = list(ex.map(analyze_facial_expression, snapshots))
-                valid = [r for r in results if r is not None]
-            if not valid:
-                st.error("All analyses failed - check your API key.")
-            else:
-                score_keys = ["eye_contact","confidence","engagement","professionalism","total"]
-                averaged = {k: round(sum(r.get(k,0) for r in valid)/len(valid)) for k in score_keys}
-                all_obs, all_impr, all_qw = [], [], []
-                seen_obs, seen_impr, seen_qw = set(), set(), set()
-                for r in valid:
-                    for o in r.get("observations",[]):
-                        if o not in seen_obs: all_obs.append(o); seen_obs.add(o)
-                    for imp in r.get("improvements",[]):
-                        if imp not in seen_impr: all_impr.append(imp); seen_impr.add(imp)
-                    for q in r.get("quick_wins",[]):
-                        if q not in seen_qw: all_qw.append(q); seen_qw.add(q)
-                averaged["observations"] = all_obs[:4]
-                averaged["improvements"] = all_impr[:4]
-                averaged["quick_wins"] = all_qw[:3]
-                averaged["summary"] = valid[-1].get("summary","")
-                averaged["_snapshot_count"] = len(valid)
-                st.session_state["facial_result"] = averaged
-                st.session_state["facial_timestamp"] = time.strftime("%Y-%m-%d %H:%M")
-                st.rerun()
-    elif st.session_state["recording_active"]:
-        st.info("Stop recording first, then the Analyze button will appear.")
-    elif not snapshots:
-        st.info("Press Start Recording - snapshots will be captured automatically every 10 seconds.")
+        st.markdown("#### Step 2 — Upload Recording for Analysis")
+        st.caption("After stopping, download your recording (button under the video), then upload it here. Frames are extracted automatically — no manual snapshots needed.")
+        video_file = st.file_uploader("Upload your practice video", type=["webm","mp4","mov"], key="video_upload")
+        if video_file is not None:
+            st.video(video_file)
+            if st.button("Extract Frames and Analyze", type="primary", use_container_width=True):
+                import tempfile
+                import cv2
+                with st.spinner("Extracting frames from your video..."):
+                    with tempfile.NamedTemporaryFile(suffix=".webm", delete=False) as tf:
+                        tf.write(video_file.getvalue())
+                        vpath = tf.name
+                    cap = cv2.VideoCapture(vpath)
+                    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+                    frames = []
+                    if total_frames > 0:
+                        indices = [int(total_frames * i / 6) for i in range(1, 6)]
+                        for idx in indices:
+                            cap.set(cv2.CAP_PROP_POS_FRAMES, idx)
+                            ok, frame = cap.read()
+                            if ok:
+                                ok2, buf = cv2.imencode(".jpg", frame)
+                                if ok2:
+                                    frames.append(buf.tobytes())
+                    else:
+                        count = 0
+                        grabbed = 0
+                        while True:
+                            ok, frame = cap.read()
+                            if not ok:
+                                break
+                            count += 1
+                            if count % 30 == 0 and grabbed < 5:
+                                ok2, buf = cv2.imencode(".jpg", frame)
+                                if ok2:
+                                    frames.append(buf.tobytes())
+                                    grabbed += 1
+                    cap.release()
+                if not frames:
+                    st.error("Could not extract frames from this video. Try re-recording or a different format.")
+                else:
+                    st.session_state["extracted_frames"] = frames
+                    with st.spinner(f"Analyzing {len(frames)} frames with Claude Vision..."):
+                        with ThreadPoolExecutor(max_workers=5) as ex:
+                            results = list(ex.map(analyze_facial_expression, frames))
+                        valid = [r for r in results if r is not None]
+                    if not valid:
+                        st.error("All analyses failed - check your API key.")
+                    else:
+                        score_keys = ["eye_contact","confidence","engagement","professionalism","total"]
+                        averaged = {k: round(sum(r.get(k,0) for r in valid)/len(valid)) for k in score_keys}
+                        all_obs, all_impr, all_qw = [], [], []
+                        seen_obs, seen_impr, seen_qw = set(), set(), set()
+                        for r in valid:
+                            for o in r.get("observations",[]):
+                                if o not in seen_obs: all_obs.append(o); seen_obs.add(o)
+                            for imp in r.get("improvements",[]):
+                                if imp not in seen_impr: all_impr.append(imp); seen_impr.add(imp)
+                            for q in r.get("quick_wins",[]):
+                                if q not in seen_qw: all_qw.append(q); seen_qw.add(q)
+                        averaged["observations"] = all_obs[:4]
+                        averaged["improvements"] = all_impr[:4]
+                        averaged["quick_wins"] = all_qw[:3]
+                        averaged["summary"] = valid[-1].get("summary","")
+                        averaged["_snapshot_count"] = len(valid)
+                        st.session_state["facial_result"] = averaged
+                        st.session_state["facial_timestamp"] = time.strftime("%Y-%m-%d %H:%M")
+                        st.rerun()
+    if st.session_state.get("extracted_frames") and st.session_state.get("facial_result"):
+        st.markdown("---")
+        st.markdown("#### Frames Extracted From Your Video")
+        frames = st.session_state["extracted_frames"]
+        cols_f = st.columns(min(len(frames), 5))
+        for i, fr in enumerate(frames):
+            with cols_f[i]:
+                st.image(fr, caption=f"Frame {i+1}", use_container_width=True)
     if st.session_state.get("facial_result"):
         result = st.session_state["facial_result"]
         total = result.get("total",0)
@@ -497,7 +480,7 @@ Privacy: Your video never leaves your browser. Only the auto-captured snapshots 
         st.markdown("---")
         st.markdown("## Body Language Report")
         if snap_count > 1:
-            st.caption(f"Averaged across {snap_count} snapshots taken automatically during your recording session.")
+            st.caption(f"Averaged across {snap_count} frames extracted from your full video recording.")
         color = "green" if total>=80 else "orange" if total>=60 else "red"
         st.markdown(f"### Score: :{color}[{total}/100]")
         st.progress(total/100)
@@ -537,8 +520,7 @@ Privacy: Your video never leaves your browser. Only the auto-captured snapshots 
         with col2:
             if st.button("New Session", use_container_width=True):
                 st.session_state["facial_result"]=None
-                st.session_state["snapshots"]=[]
-                st.session_state["recording_active"]=False
+                st.session_state["extracted_frames"]=None
                 st.rerun()
 
 # ── PRACTICE SESSION ─────────────────────────────
