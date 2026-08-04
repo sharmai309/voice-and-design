@@ -90,6 +90,96 @@ section[data-testid="stMain"] h1, section[data-testid="stMain"] h2, section[data
   color: #ffffff !important;
   font-weight: 700 !important;
 }
+
+/* ---------- Force light-mode colors regardless of OS/browser dark mode ---------- */
+/* Streamlit respects prefers-color-scheme by default; this pins the app to
+   always render with light-mode text colors, since the app's own design
+   (white cards, colored accents) assumes light backgrounds everywhere. */
+
+/* Widget labels: selectbox, text_input, toggle, radio, camera_input, etc. */
+[data-testid="stWidgetLabel"],
+[data-testid="stWidgetLabel"] * ,
+label,
+.stSelectbox label,
+.stTextInput label,
+.stCheckbox label,
+.stRadio label:not([data-testid="stSidebar"] *) {
+  color: #111827 !important;
+  opacity: 1 !important;
+}
+
+/* Chat messages (sponsor + student turns in Practice Session) */
+[data-testid="stChatMessageContent"],
+[data-testid="stChatMessageContent"] * ,
+[data-testid="stChatMessage"] p {
+  color: #111827 !important;
+  opacity: 1 !important;
+}
+
+/* Metrics (Live Stats: Responses, Avg words, and Eye Contact etc.) */
+[data-testid="stMetric"],
+[data-testid="stMetric"] * ,
+[data-testid="stMetricLabel"],
+[data-testid="stMetricLabel"] * ,
+[data-testid="stMetricValue"],
+[data-testid="stMetricValue"] * ,
+[data-testid="stMetricDelta"],
+[data-testid="stMetricDelta"] * {
+  color: #111827 !important;
+  opacity: 1 !important;
+}
+
+/* Captions (small gray helper text under buttons, uploaders, etc.) */
+[data-testid="stCaptionContainer"],
+[data-testid="stCaptionContainer"] * {
+  color: #6B7280 !important;
+  opacity: 1 !important;
+}
+
+/* Blue info boxes specifically: force dark text so it never matches the
+   light-blue background regardless of theme (fixes blue-on-blue). */
+div[data-testid="stAlert"] {
+  color: #075985 !important;
+}
+div[data-testid="stAlert"] * {
+  color: #075985 !important;
+  opacity: 1 !important;
+}
+/* Warning/success/error alerts still get the neutral dark color from the
+   earlier rule below; this one narrows back to blue only for info boxes
+   using the actual rendered background as a cue is not possible in pure
+   CSS, so instead we keep all alert text one dark, readable color: */
+div[data-testid="stAlert"] p,
+div[data-testid="stAlert"] div,
+div[data-testid="stAlert"] span {
+  color: #1F2937 !important;
+  opacity: 1 !important;
+}
+
+/* Expander headers and content (used in "About [persona]" on Practice Session) */
+[data-testid="stExpander"] summary,
+[data-testid="stExpander"] summary *,
+[data-testid="stExpander"] p,
+[data-testid="stExpander"] li,
+[data-testid="stExpander"] strong {
+  color: #111827 !important;
+  opacity: 1 !important;
+}
+
+/* File uploader text (Video Practice upload box) */
+[data-testid="stFileUploader"],
+[data-testid="stFileUploader"] * ,
+[data-testid="stFileUploaderDropzoneInstructions"],
+[data-testid="stFileUploaderDropzoneInstructions"] * {
+  color: #111827 !important;
+  opacity: 1 !important;
+}
+
+/* Force color-scheme to light so the browser does not auto-invert
+   native form controls (date pickers, checkboxes, etc.) */
+:root {
+  color-scheme: light !important;
+}
 </style>
 """
 
