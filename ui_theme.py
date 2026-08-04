@@ -1,3 +1,4 @@
+
 """
 ui_theme.py
 Shared design system for Capstone Coach.
@@ -120,6 +121,40 @@ header [data-testid="stExpandSidebarButton"] svg { fill: #ffffff !important; col
 .fade-in.d4 { animation-delay: .26s; }
 .fade-in.d5 { animation-delay: .33s; }
 .fade-in.d6 { animation-delay: .40s; }
+
+/* ---------- Force readable dark text on results/report content ----------
+   Fixes washed-out text on the Video Practice results page (yellow
+   st.warning boxes, Tips markdown, section headings, metric numbers).
+   Deliberately does NOT touch the sidebar, which needs white text. */
+div[data-testid="stAlert"],
+div[data-testid="stAlert"] p,
+div[data-testid="stAlert"] div,
+div[data-testid="stAlert"] span,
+div[data-testid="stAlert"] * {
+  color: #1F2937 !important;
+  opacity: 1 !important;
+}
+
+/* Markdown headings and body text in the main content area */
+[data-testid="stAppViewContainer"] .main h1,
+[data-testid="stAppViewContainer"] .main h2,
+[data-testid="stAppViewContainer"] .main h3,
+[data-testid="stAppViewContainer"] .main h4,
+[data-testid="stAppViewContainer"] .main p,
+[data-testid="stAppViewContainer"] .main li,
+[data-testid="stAppViewContainer"] .main strong {
+  color: #111827 !important;
+  opacity: 1 !important;
+}
+
+/* Metric labels and values (Eye Contact 14/25 etc.) */
+[data-testid="stMetricLabel"],
+[data-testid="stMetricLabel"] *,
+[data-testid="stMetricValue"],
+[data-testid="stMetricValue"] * {
+  color: #111827 !important;
+  opacity: 1 !important;
+}
 </style>
 """
 
