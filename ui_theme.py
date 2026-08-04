@@ -1,5 +1,4 @@
-@'
-"""
+﻿"""
 ui_theme.py
 Shared design system for Capstone Coach.
 """
@@ -17,18 +16,7 @@ THEME_CSS = """
 [data-testid="stSidebarNav"] { display: none; }
 #MainMenu, footer { visibility: hidden; }
 header { visibility: hidden; }
-header [data-testid="stExpandSidebarButton"] {
-  visibility: visible !important;
-  display: flex !important;
-  position: fixed !important;
-  top: 10px !important;
-  left: 10px !important;
-  z-index: 999999 !important;
-  background: #0f0f1a !important;
-  border-radius: 8px !important;
-  padding: 6px !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-}
+header [data-testid="stExpandSidebarButton"] { visibility: visible !important; display: flex !important; position: fixed !important; top: 10px !important; left: 10px !important; z-index: 999999 !important; background: #0f0f1a !important; border-radius: 8px !important; padding: 6px !important; box-shadow: 0 2px 8px rgba(0,0,0,0.25); }
 header [data-testid="stExpandSidebarButton"] svg { fill: #ffffff !important; color: #ffffff !important; }
 .block-container { padding-top: 2rem; max-width: 1200px; }
 .hero-title { font-size: 3.5rem; font-weight: 800; background: linear-gradient(135deg, #7A1F2E, #B3273A); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1.2; margin-bottom: 1rem; }
@@ -57,14 +45,13 @@ header [data-testid="stExpandSidebarButton"] svg { fill: #ffffff !important; col
 .student-chip.speaking { background:#FBEAEC; border-color:#9F2B3F; }
 .student-chip.done { background:#ECFDF5; border-color:#10B981; color:#065F46; }
 .live-dot { width:9px; height:9px; border-radius:50%; background:#EF4444; display:inline-block; animation: pulse 1.4s infinite; }
-@keyframes pulse {
-  0%   { box-shadow: 0 0 0 0 rgba(239,68,68,.55); }
-  70%  { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
-  100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
-}
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,.55); } 70% { box-shadow: 0 0 0 8px rgba(239,68,68,0); } 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } }
 .stButton button { border-radius: 10px !important; font-weight: 600 !important; transition: all 0.2s !important; }
 .stButton button[kind="primary"] { background: linear-gradient(135deg, #7A1F2E, #B3273A) !important; border: none !important; }
 .stButton button:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(159,43,63,0.18); }
+.stButton button, .stButton button span, .stButton button p,
+[data-testid="stBaseButton-secondary"], [data-testid="stBaseButton-secondary"] span,
+[data-testid="stBaseButton-primary"], [data-testid="stBaseButton-primary"] span { color: #ffffff !important; }
 .st-key-cta_banner .cta-card { background: linear-gradient(135deg, #7A1F2E, #B3273A); border-radius: 20px 20px 0 0; padding: 36px 40px 18px; text-align: center; color: #ffffff; }
 .st-key-cta_banner div[data-testid="stVerticalBlock"] { gap: 0 !important; }
 .st-key-cta_banner .stButton { margin-top: 0 !important; }
@@ -78,25 +65,9 @@ header [data-testid="stExpandSidebarButton"] svg { fill: #ffffff !important; col
 .fade-in.d4 { animation-delay: .26s; }
 .fade-in.d5 { animation-delay: .33s; }
 .fade-in.d6 { animation-delay: .40s; }
-div[data-testid="stAlert"],
-div[data-testid="stAlert"] p,
-div[data-testid="stAlert"] div,
-div[data-testid="stAlert"] span,
-div[data-testid="stAlert"] * { color: #1F2937 !important; opacity: 1 !important; }
-section[data-testid="stMain"] h1,
-section[data-testid="stMain"] h2,
-section[data-testid="stMain"] h3,
-section[data-testid="stMain"] h4,
-section[data-testid="stMain"] h5,
-section[data-testid="stMain"] h6,
-section[data-testid="stMain"] p,
-section[data-testid="stMain"] li,
-section[data-testid="stMain"] strong,
-section[data-testid="stMain"] em,
-section.main h1, section.main h2, section.main h3, section.main h4,
-section.main p, section.main li, section.main strong, section.main em { color: #111827 !important; opacity: 1 !important; }
-[data-testid="stMetricLabel"], [data-testid="stMetricLabel"] *,
-[data-testid="stMetricValue"], [data-testid="stMetricValue"] * { color: #111827 !important; opacity: 1 !important; }
+div[data-testid="stAlert"], div[data-testid="stAlert"] p, div[data-testid="stAlert"] div, div[data-testid="stAlert"] span, div[data-testid="stAlert"] * { color: #1F2937 !important; opacity: 1 !important; }
+section[data-testid="stMain"] h1, section[data-testid="stMain"] h2, section[data-testid="stMain"] h3, section[data-testid="stMain"] h4, section[data-testid="stMain"] h5, section[data-testid="stMain"] h6, section[data-testid="stMain"] p, section[data-testid="stMain"] li, section[data-testid="stMain"] strong, section[data-testid="stMain"] em, section.main h1, section.main h2, section.main h3, section.main h4, section.main p, section.main li, section.main strong, section.main em { color: #111827 !important; opacity: 1 !important; }
+[data-testid="stMetricLabel"], [data-testid="stMetricLabel"] *, [data-testid="stMetricValue"], [data-testid="stMetricValue"] * { color: #111827 !important; opacity: 1 !important; }
 </style>
 """
 
@@ -129,4 +100,3 @@ def sidebar_brand():
   <div style="font-size:0.75rem;color:#9CA3AF;">Sponsor Meeting Simulator</div>
 </div>
 """, unsafe_allow_html=True)
-'@ | Out-File -FilePath ui_theme.py -Encoding utf8
