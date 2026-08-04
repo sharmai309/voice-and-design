@@ -14,7 +14,7 @@ def get_client():
     except Exception:
         key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not key:
-        st.error("⚠️ ANTHROPIC_API_KEY is not set.")
+        st.error("⚠️ ANTHROPIC_API_KEY is not set. Add it to .streamlit/secrets.toml or your environment.")
     return Anthropic(api_key=key)
 
 def get_openai_client():
@@ -24,7 +24,7 @@ def get_openai_client():
     except Exception:
         key = os.environ.get("OPENAI_API_KEY", "")
     if not key:
-        st.error("⚠️ OPENAI_API_KEY is not set.")
+        st.error("⚠️ OPENAI_API_KEY is not set. Add it to .streamlit/secrets.toml or your environment.")
     return OpenAI(api_key=key)
 
 def extract_json(raw):
@@ -56,10 +56,18 @@ PERSONAS = {
 DIFF_CLASS = {1:"diff-1",2:"diff-2",3:"diff-3",4:"diff-4",5:"diff-5"}
 
 SCENARIOS = {
-    "initial": {"name":"Initial Meeting / Problem Definition","icon":"🧭","desc":"First meeting with your sponsor — introduce the team and nail down the problem you're solving.","context":"MEETING SCENARIO — INITIAL MEETING / PROBLEM DEFINITION: This is the team's first meeting with you. Steer the conversation toward understanding the problem statement, business context, and what success looks like. Ask why this problem matters now and who is affected."},
-    "scope": {"name":"Scope","icon":"📐","desc":"Define what's in and out of scope for the project, deliverables, and constraints.","context":"MEETING SCENARIO — SCOPE: This meeting is about defining scope. Steer the conversation toward what is and isn't included in the project, deliverables, timeline, and constraints. Push back if the team's scope sounds too broad, too vague, or unbounded."},
-    "data": {"name":"Data","icon":"🗄️","desc":"Discuss data sources, access, quality, and privacy/security constraints.","context":"MEETING SCENARIO — DATA: This meeting is about data. Steer the conversation toward what data sources are available, how the team will access them, data quality concerns, and any privacy/security constraints. Ask pointed questions about data readiness."},
-    "progress": {"name":"Progress Summary","icon":"📈","desc":"Give a progress update — what's done, what's blocked, what's next.","context":"MEETING SCENARIO — PROGRESS SUMMARY: This meeting is a status update. Expect the team to report what they've completed, what's blocked, and next steps. Ask about timeline risk and whether the project is on track."},
+    "initial": {"name":"Initial Meeting / Problem Definition","icon":"🧭",
+        "desc":"First meeting with your sponsor — introduce the team and nail down the problem you're solving.",
+        "context":"MEETING SCENARIO — INITIAL MEETING / PROBLEM DEFINITION: This is the team's first meeting with you. Steer the conversation toward understanding the problem statement, business context, and what success looks like. Ask why this problem matters now and who is affected."},
+    "scope": {"name":"Scope","icon":"📐",
+        "desc":"Define what's in and out of scope for the project, deliverables, and constraints.",
+        "context":"MEETING SCENARIO — SCOPE: This meeting is about defining scope. Steer the conversation toward what is and isn't included in the project, deliverables, timeline, and constraints. Push back if the team's scope sounds too broad, too vague, or unbounded."},
+    "data": {"name":"Data","icon":"🗄️",
+        "desc":"Discuss data sources, access, quality, and privacy/security constraints.",
+        "context":"MEETING SCENARIO — DATA: This meeting is about data. Steer the conversation toward what data sources are available, how the team will access them, data quality concerns, and any privacy/security constraints. Ask pointed questions about data readiness."},
+    "progress": {"name":"Progress Summary","icon":"📈",
+        "desc":"Give a progress update — what's done, what's blocked, what's next.",
+        "context":"MEETING SCENARIO — PROGRESS SUMMARY: This meeting is a status update. Expect the team to report what they've completed, what's blocked, and next steps. Ask about timeline risk and whether the project is on track."},
 }
 
 SCORE_PROMPT = """Evaluate this Capstone sponsor meeting. Score 0-25 each (total 100):
@@ -87,15 +95,15 @@ VIDEO_HTML = """
 <div style="font-family:sans-serif;">
   <video id="videoEl" autoplay muted playsinline style="width:100%;border-radius:12px;background:#000;max-height:380px;"></video>
   <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
-    <button id="startBtn" onclick="startRecording()" style="padding:10px 20px;border-radius:8px;border:none;background:linear-gradient(135deg,#7A1F2E,#B3273A);color:white;font-size:14px;font-weight:600;cursor:pointer;">▶️ Start Recording</button>
-    <button id="stopBtn" onclick="stopRecording()" disabled style="padding:10px 20px;border-radius:8px;border:none;background:#EF4444;color:white;font-size:14px;font-weight:600;cursor:pointer;opacity:0.4;">⏹️ Stop</button>
+    <button id="startBtn" onclick="startRecording()" style="padding:10px 20px;border-radius:8px;border:none;background:linear-gradient(135deg,#7A1F2E,#B3273A);color:white;font-size:14px;font-weight:600;cursor:pointer;">Start Recording</button>
+    <button id="stopBtn" onclick="stopRecording()" disabled style="padding:10px 20px;border-radius:8px;border:none;background:#EF4444;color:white;font-size:14px;font-weight:600;cursor:pointer;opacity:0.4;">Stop</button>
     <span id="timer" style="padding:10px;font-size:14px;color:#EF4444;font-weight:600;align-self:center;"></span>
   </div>
   <div id="status" style="margin-top:8px;font-size:13px;color:#6B7280;"></div>
   <div id="previewDiv" style="margin-top:12px;display:none;">
-    <p style="font-size:13px;font-weight:600;margin-bottom:6px;">📹 Your recording:</p>
+    <p style="font-size:13px;font-weight:600;margin-bottom:6px;">Your recording:</p>
     <video id="previewEl" controls style="width:100%;border-radius:8px;max-height:280px;"></video>
-    <a id="downloadLink" download="interview-practice.webm" style="display:inline-block;margin-top:8px;padding:8px 16px;background:#9F2B3F;color:white;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;">⬇️ Download Video</a>
+    <a id="downloadLink" download="interview-practice.webm" style="display:inline-block;margin-top:8px;padding:8px 16px;background:#9F2B3F;color:white;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;">Download Video</a>
   </div>
 </div>
 <script>
@@ -113,7 +121,7 @@ async function startRecording(){
       document.getElementById("previewEl").src=url;
       document.getElementById("downloadLink").href=url;
       document.getElementById("previewDiv").style.display="block";
-      document.getElementById("status").textContent="✅ Done! Download your recording.";
+      document.getElementById("status").textContent="Done! Download your recording.";
     };
     mediaRecorder.start(1000);
     seconds=0;
@@ -121,15 +129,15 @@ async function startRecording(){
       seconds++;
       const m=Math.floor(seconds/60).toString().padStart(2,"0");
       const s=(seconds%60).toString().padStart(2,"0");
-      document.getElementById("timer").textContent="🔴 "+m+":"+s;
+      document.getElementById("timer").textContent="REC "+m+":"+s;
     },1000);
     document.getElementById("startBtn").disabled=true;
     document.getElementById("startBtn").style.opacity="0.5";
     document.getElementById("stopBtn").disabled=false;
     document.getElementById("stopBtn").style.opacity="1";
-    document.getElementById("status").textContent="🔴 Recording...";
+    document.getElementById("status").textContent="Recording...";
   } catch(e){
-    document.getElementById("status").textContent="❌ Camera access denied.";
+    document.getElementById("status").textContent="Camera access denied.";
   }
 }
 function stopRecording(){
@@ -235,7 +243,6 @@ def handle_user_message(user_text, msgs, hints, mkey, hkey, system_prompt, voice
 if st.session_state.get("pending_tts"):
     speak_text(st.session_state.pop("pending_tts"))
 
-# ── SIDEBAR ──────────────────────────────────────
 sidebar_brand()
 st.sidebar.markdown("---")
 
@@ -253,14 +260,14 @@ st.sidebar.markdown(f"""
 <div style="padding:12px;background:#1a1a2e;border-radius:10px;margin-bottom:8px;">
   <div style="font-size:0.75rem;color:#9CA3AF;margin-bottom:4px;">YOUR BEST SCORE</div>
   <div style="font-size:1.8rem;font-weight:800;color:{'#10B981' if best>=80 else '#F59E0B' if best>=60 else 'white'};">{best}/100</div>
-  {'<div style="font-size:0.75rem;color:#10B981;margin-top:2px;">✅ Meeting Ready!</div>' if best>=80 else f'<div style="font-size:0.75rem;color:#9CA3AF;margin-top:2px;">Need {80-best} more points</div>'}
+  {'<div style="font-size:0.75rem;color:#10B981;margin-top:2px;">Meeting Ready!</div>' if best>=80 else f'<div style="font-size:0.75rem;color:#9CA3AF;margin-top:2px;">Need {80-best} more points</div>'}
 </div>
 """, unsafe_allow_html=True)
 if best < 80:
     st.sidebar.progress(min(best/80,1.0))
 
 st.sidebar.markdown("---")
-st.sidebar.page_link("pages/4_Group_Practice_Call.py", label="👥 Group Practice Call")
+st.sidebar.page_link("pages/4_Group_Practice_Call.py", label="Group Practice Call")
 
 def go_to(page_name, persona_id=None):
     st.session_state["current_page"] = page_name
@@ -268,9 +275,275 @@ def go_to(page_name, persona_id=None):
         st.session_state["pid"] = persona_id
     st.rerun()
 
+# ── HOME ─────────────────────────────────────────
+if page == "🏠 Home":
+    col1, col2 = st.columns([3,2])
+    with col1:
+        st.markdown('<div class="hero-label fade-in">AI-Powered Practice for UChicago Capstone</div>', unsafe_allow_html=True)
+        st.markdown('<div class="hero-title fade-in d1">Practice that feels real.<br>Results that are.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="hero-sub fade-in d2">Practice your sponsor meetings with AI personas, get live coaching after every message, record your body language, and get certified meeting-ready.</div>', unsafe_allow_html=True)
+        c1,c2,c3 = st.columns(3)
+        with c1:
+            if st.button("Start Practicing", use_container_width=True, type="primary"):
+                go_to("💬 Practice Session", "mentor")
+        with c2:
+            if st.button("Video Practice", use_container_width=True):
+                go_to("📹 Video Practice")
+    with col2:
+        st.markdown("""
+<div style="background:linear-gradient(135deg,#FBEAEC,#F7DEE1);border-radius:20px;padding:24px;margin-top:16px;">
+  <div style="font-size:0.7rem;font-weight:600;color:#6B7280;letter-spacing:0.1em;margin-bottom:12px;">LIVE PRACTICE SESSION</div>
+  <div style="background:white;border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <div style="width:36px;height:36px;background:#9F2B3F;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;">🔍</div>
+      <div>
+        <div style="font-size:0.85rem;font-weight:600;color:#111827;">Dr. Raj Patel</div>
+        <div style="font-size:0.75rem;color:#9CA3AF;">CDO at Verizon · Skeptical</div>
+      </div>
+    </div>
+    <div style="font-size:0.85rem;color:#374151;line-height:1.5;">"You're solving before diagnosing the problem. What data supports that assumption?"</div>
+  </div>
+  <div style="background:#FBEAEC;border-radius:10px;padding:10px 12px;font-size:0.8rem;color:#7A1F2E;">
+    Hint: Back up your claim with a specific data point or source.
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown('<div class="section-header">How it works</div>', unsafe_allow_html=True)
+    steps = [
+        ("1","Choose a persona","Pick from 5 AI sponsor types — from supportive mentor to tough skeptic."),
+        ("2","Practice the meeting","Type or speak your responses. The sponsor stays in character."),
+        ("3","Get live coaching","After every message, an AI coach gives you a one-line hint."),
+        ("4","Record and analyze","Snapshots are auto-captured every 10 seconds and analyzed by Claude Vision.")
+    ]
+    cols = st.columns(4)
+    for idx,(num,title,desc) in enumerate(steps):
+        with cols[idx]:
+            st.markdown(f"""
+<div class="step-card fade-in d{idx+1}">
+  <div style="width:44px;height:44px;background:linear-gradient(135deg,#7A1F2E,#B3273A);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:1.1rem;margin:0 auto 14px;">{num}</div>
+  <div style="font-size:1rem;font-weight:700;color:#111827;margin-bottom:8px;">{title}</div>
+  <div style="font-size:0.85rem;color:#6B7280;line-height:1.5;">{desc}</div>
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown("---")
+    score_dims = [
+        ("📋","Preparation","Did you research the sponsor, bring an agenda, and ask informed questions?"),
+        ("🗣️","Communication","Were your responses clear, concise, and professional?"),
+        ("🧭","Meeting Management","Did you open well, keep structure, and close with next steps?"),
+        ("🤝","Relationship Building","Did you listen actively, build rapport, and show empathy?")
+    ]
+    cols = st.columns(4)
+    for idx,(icon,title,desc) in enumerate(score_dims):
+        with cols[idx]:
+            st.markdown(f"""
+<div class="step-card fade-in d{idx+1}">
+  <div style="font-size:1.6rem;margin-bottom:10px;">{icon}</div>
+  <div style="font-size:0.95rem;font-weight:700;color:#111827;margin-bottom:6px;">{title}</div>
+  <div style="font-size:0.82rem;color:#6B7280;line-height:1.5;">{desc}</div>
+  <div style="margin-top:10px;font-size:0.75rem;font-weight:700;color:#9F2B3F;">0-25 pts</div>
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown("---")
+    cols = st.columns(5)
+    for idx,(pid,p) in enumerate(PERSONAS.items()):
+        with cols[idx]:
+            st.markdown(f"""
+<div class="persona-card fade-in d{(idx % 6) + 1}">
+  <div class="persona-icon">{p['icon']}</div>
+  <div class="persona-name">{p['name']}</div>
+  <div class="persona-company">🏢 {p['company']}</div>
+  <div class="persona-desc">{p['desc']}</div>
+  <span class="difficulty-badge {DIFF_CLASS[p['difficulty']]}">{p['diff_label']}</span>
+</div>
+""", unsafe_allow_html=True)
+            if st.button("Practice", key=f"h_{pid}", use_container_width=True):
+                go_to("💬 Practice Session", pid)
+
+    st.markdown("---")
+    with st.container(key="cta_banner"):
+        st.markdown("""
+<div class="cta-card">
+  <div style="font-size:2rem;font-weight:800;margin-bottom:12px;">Ready to practice?</div>
+  <div style="font-size:1rem;opacity:0.9;">Hit 80/100 to get certified meeting-ready.</div>
+</div>
+""", unsafe_allow_html=True)
+        if st.button("Start with Mentor Sponsor", use_container_width=True, type="primary"):
+            go_to("💬 Practice Session", "mentor")
+
+# ── VIDEO PRACTICE ────────────────────────────────
+elif page == "📹 Video Practice":
+    from streamlit_autorefresh import st_autorefresh
+    st.markdown('<div class="hero-title" style="font-size:2rem;">Video Practice</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-sub">Start recording — snapshots are captured automatically every 10 seconds. Stop when done, then analyze all snapshots at once.</div>', unsafe_allow_html=True)
+    st.markdown("""
+<div style="background:#F0F9FF;border:1px solid #BAE6FD;border-radius:10px;padding:10px 14px;font-size:0.83rem;color:#075985;margin-top:8px;">
+Privacy: Your video never leaves your browser. Only the auto-captured snapshots are sent to Claude for analysis, and they are not saved after your session ends.
+</div>
+""", unsafe_allow_html=True)
+    st.markdown("---")
+    names = {v["name"]:k for k,v in PERSONAS.items()}
+    default = st.session_state.get("pid","mentor")
+    sel = st.selectbox("Choose your sponsor", list(names.keys()),
+        index=list(names.keys()).index(PERSONAS[default]["name"]))
+    pid = names[sel]
+    p = PERSONAS[pid]
+    if "snapshots" not in st.session_state:
+        st.session_state["snapshots"] = []
+    if "recording_active" not in st.session_state:
+        st.session_state["recording_active"] = False
+    st.markdown("---")
+    col_ctrl1, col_ctrl2, col_ctrl3 = st.columns([2,2,3])
+    with col_ctrl1:
+        if not st.session_state["recording_active"]:
+            if st.button("Start Recording and Auto-Capture", type="primary", use_container_width=True):
+                st.session_state["recording_active"] = True
+                st.session_state["snapshots"] = []
+                st.session_state["facial_result"] = None
+                st.rerun()
+    with col_ctrl2:
+        if st.session_state["recording_active"]:
+            if st.button("Stop Recording", use_container_width=True):
+                st.session_state["recording_active"] = False
+                st.rerun()
+    with col_ctrl3:
+        n = len(st.session_state["snapshots"])
+        if st.session_state["recording_active"]:
+            st.info(f"Recording... {n}/5 snapshots captured (auto every 10s)")
+        elif n > 0:
+            st.success(f"{n} snapshot{'s' if n>1 else ''} ready for analysis")
+    if st.session_state["recording_active"]:
+        st_autorefresh(interval=10000, limit=None, key="snap_refresh")
+    st.markdown("---")
+    col1, col2 = st.columns([3,2])
+    with col1:
+        st.markdown("#### Camera Feed and Recording")
+        st.info("Look at camera - Good lighting - Sit upright - Professional background")
+        st.components.v1.html(VIDEO_HTML, height=500)
+    with col2:
+        st.markdown("#### Auto-Captured Snapshots")
+        snapshots = st.session_state["snapshots"]
+        n = len(snapshots)
+        if st.session_state["recording_active"] and n < 5:
+            st.caption(f"Auto-capturing every 10s... ({n}/5 so far)")
+            img_file = st.camera_input(
+                "Live snapshot",
+                key=f"auto_cam_{n}_{int(time.time()//10)}",
+                label_visibility="collapsed"
+            )
+            if img_file:
+                current_bytes = img_file.getvalue()
+                if not snapshots or current_bytes != snapshots[-1]:
+                    st.session_state["snapshots"].append(current_bytes)
+                    st.rerun()
+        elif n >= 5:
+            st.success("5/5 snapshots captured - stop recording and analyze!")
+        elif not st.session_state["recording_active"] and n == 0:
+            st.caption("Press Start Recording above - snapshots will appear here automatically every 10 seconds.")
+        if snapshots:
+            st.markdown(f"**{len(snapshots)} snapshot{'s' if len(snapshots)>1 else ''} captured:**")
+            cols_t = st.columns(min(len(snapshots), 5))
+            for i, snap in enumerate(snapshots):
+                with cols_t[i]:
+                    st.image(snap, caption=f"#{i+1}", use_container_width=True)
+            if st.button("Clear and Start Over", use_container_width=True):
+                st.session_state["snapshots"] = []
+                st.session_state["facial_result"] = None
+                st.session_state["recording_active"] = False
+                st.rerun()
+    st.markdown("---")
+    snapshots = st.session_state["snapshots"]
+    if snapshots and not st.session_state["recording_active"]:
+        st.markdown(f"#### Analyze {len(snapshots)} Snapshot{'s' if len(snapshots)>1 else ''}")
+        st.caption("Claude Vision analyzes each snapshot and averages scores for a more accurate body language assessment.")
+        if st.button(f"Analyze All {len(snapshots)} Snapshot{'s' if len(snapshots)>1 else ''}", type="primary", use_container_width=True):
+            with st.spinner(f"Analyzing {len(snapshots)} snapshot{'s' if len(snapshots)>1 else ''} in parallel..."):
+                with ThreadPoolExecutor(max_workers=5) as ex:
+                    results = list(ex.map(analyze_facial_expression, snapshots))
+                valid = [r for r in results if r is not None]
+            if not valid:
+                st.error("All analyses failed - check your API key.")
+            else:
+                score_keys = ["eye_contact","confidence","engagement","professionalism","total"]
+                averaged = {k: round(sum(r.get(k,0) for r in valid)/len(valid)) for k in score_keys}
+                all_obs, all_impr, all_qw = [], [], []
+                seen_obs, seen_impr, seen_qw = set(), set(), set()
+                for r in valid:
+                    for o in r.get("observations",[]):
+                        if o not in seen_obs: all_obs.append(o); seen_obs.add(o)
+                    for imp in r.get("improvements",[]):
+                        if imp not in seen_impr: all_impr.append(imp); seen_impr.add(imp)
+                    for q in r.get("quick_wins",[]):
+                        if q not in seen_qw: all_qw.append(q); seen_qw.add(q)
+                averaged["observations"] = all_obs[:4]
+                averaged["improvements"] = all_impr[:4]
+                averaged["quick_wins"] = all_qw[:3]
+                averaged["summary"] = valid[-1].get("summary","")
+                averaged["_snapshot_count"] = len(valid)
+                st.session_state["facial_result"] = averaged
+                st.session_state["facial_timestamp"] = time.strftime("%Y-%m-%d %H:%M")
+                st.rerun()
+    elif st.session_state["recording_active"]:
+        st.info("Stop recording first, then the Analyze button will appear.")
+    elif not snapshots:
+        st.info("Press Start Recording - snapshots will be captured automatically every 10 seconds.")
+    if st.session_state.get("facial_result"):
+        result = st.session_state["facial_result"]
+        total = result.get("total",0)
+        snap_count = result.get("_snapshot_count", 1)
+        st.markdown("---")
+        st.markdown("## Body Language Report")
+        if snap_count > 1:
+            st.caption(f"Averaged across {snap_count} snapshots taken automatically during your recording session.")
+        color = "green" if total>=80 else "orange" if total>=60 else "red"
+        st.markdown(f"### Score: :{color}[{total}/100]")
+        st.progress(total/100)
+        if total>=80: st.success("Excellent! You look confident and professional.")
+        elif total>=60: st.warning("Good effort - a few tweaks will help a lot.")
+        else: st.error("Needs work before the real meeting.")
+        st.markdown("---")
+        ec,cf,en,pr = result.get("eye_contact",0),result.get("confidence",0),result.get("engagement",0),result.get("professionalism",0)
+        c1,c2,c3,c4 = st.columns(4)
+        c1.metric("Eye Contact",f"{ec}/25",delta="Good" if ec>=20 else "Needs work")
+        c2.metric("Confidence",f"{cf}/25",delta="Good" if cf>=20 else "Needs work")
+        c3.metric("Engagement",f"{en}/25",delta="Good" if en>=20 else "Needs work")
+        c4.metric("Professionalism",f"{pr}/25",delta="Good" if pr>=20 else "Needs work")
+        st.markdown("---")
+        col1,col2 = st.columns(2)
+        with col1:
+            st.markdown("#### What You Did Well")
+            for o in result.get("observations",[]): st.success(o)
+            st.markdown("#### Quick Wins")
+            for q in result.get("quick_wins",[]): st.info(q)
+        with col2:
+            st.markdown("#### Improve")
+            for imp in result.get("improvements",[]): st.warning(imp)
+            st.markdown("#### Tips")
+            if ec<20: st.markdown("**Eye contact:** Look at your camera lens, not your own face on screen.")
+            if cf<20: st.markdown("**Confidence:** Sit up straight, take a breath, speak at a steady pace.")
+            if en<20: st.markdown("**Engagement:** Nod occasionally, lean slightly forward, smile naturally.")
+            if pr<20: st.markdown("**Professionalism:** Clean background, front lighting, dress professionally.")
+        st.markdown("---")
+        st.info(f"**Overall:** {result.get('summary','')}")
+        col1,col2 = st.columns(2)
+        with col1:
+            if st.button("Save to My Progress", use_container_width=True):
+                if "video_history" not in st.session_state: st.session_state["video_history"]=[]
+                st.session_state["video_history"].append({"persona":p["name"],"score":total,"eye_contact":ec,"confidence":cf,"engagement":en,"professionalism":pr,"summary":result.get("summary",""),"timestamp":st.session_state.get("facial_timestamp","")})
+                st.success("Saved!")
+        with col2:
+            if st.button("New Session", use_container_width=True):
+                st.session_state["facial_result"]=None
+                st.session_state["snapshots"]=[]
+                st.session_state["recording_active"]=False
+                st.rerun()
+
 # ── PRACTICE SESSION ─────────────────────────────
 elif page == "💬 Practice Session":
-    st.markdown('<div class="hero-title" style="font-size:2rem;">💬 Practice Session</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-title" style="font-size:2rem;">Practice Session</div>', unsafe_allow_html=True)
     names = {v["name"]:k for k,v in PERSONAS.items()}
     default = st.session_state.get("pid","mentor")
     scenario_names = {v["name"]:k for k,v in SCENARIOS.items()}
@@ -290,13 +563,13 @@ elif page == "💬 Practice Session":
     system_prompt = p["prompt"] + "\n\n" + scenario["context"]
     col1,col2 = st.columns([3,1])
     with col1:
-        with st.expander(f"{p['icon']} About {p['name']} — {p['company']}  ·  {scenario['icon']} {scenario['name']}"):
+        with st.expander(f"{p['icon']} About {p['name']} — {p['company']}  · {scenario['icon']} {scenario['name']}"):
             st.markdown(f"**Role:** {p['role']}")
             st.markdown(f"**Difficulty:** {'★'*p['difficulty']}{'☆'*(5-p['difficulty'])} {p['diff_label']}")
             st.markdown(p["desc"])
             st.markdown(f"**Scenario:** {scenario['desc']}")
     with col2:
-        voice_on = st.toggle("🔊 Sponsor voice",value=False)
+        voice_on = st.toggle("Sponsor voice",value=False)
     st.markdown("---")
     mkey,hkey = f"m_{pid}_{scenario_id}",f"h_{pid}_{scenario_id}"
     scored_key,result_key = f"scored_{pid}_{scenario_id}",f"result_{pid}_{scenario_id}"
@@ -308,13 +581,13 @@ elif page == "💬 Practice Session":
     hints = st.session_state[hkey]
     c1,c2 = st.columns([1,4])
     with c1:
-        if st.button("🔄 New Session"):
+        if st.button("New Session"):
             st.session_state[mkey]=[]; st.session_state[hkey]=[]
             st.session_state[scored_key]=False; st.session_state[result_key]=None
             st.rerun()
     with c2:
         turns = sum(1 for m in msgs if m["role"]=="user")
-        st.caption(f"💬 {turns} responses — {'🎯 Ready to score!' if turns>=3 else f'Need {3-turns} more to unlock scoring'}")
+        st.caption(f"{turns} responses — {'Ready to score!' if turns>=3 else f'Need {3-turns} more to unlock scoring'}")
     if not msgs:
         try:
             with st.spinner(f"{p['icon']} {p['name']} is joining..."):
@@ -337,51 +610,38 @@ elif page == "💬 Practice Session":
                 if hidx < len(hints) and hints[hidx]:
                     st.markdown(f'<div class="hint-bubble">💡 {hints[hidx]}</div>', unsafe_allow_html=True)
     with col_side:
-        st.markdown("### 📊 Live Stats")
+        st.markdown("### Live Stats")
         with st.container(border=True):
             sm = [m for m in msgs if m["role"]=="user"]
             avg_w = round(sum(len(m["content"].split()) for m in sm)/len(sm)) if sm else 0
             st.metric("Responses",len(sm))
             st.metric("Avg words",avg_w)
-            if avg_w>80: st.warning("⚠️ Too long!")
-            elif avg_w>0: st.success("✅ Good length")
+            if avg_w>80: st.warning("Too long!")
+            elif avg_w>0: st.success("Good length")
         if hints:
-            st.markdown("### 💡 Recent Hints")
+            st.markdown("### Recent Hints")
             for h in hints[-3:]:
                 st.markdown(f'<div class="hint-bubble">{h}</div>', unsafe_allow_html=True)
     if not st.session_state[scored_key]:
         st.markdown("---")
-        st.markdown("#### 🎙️ Record your voice")
+        st.markdown("#### Record your voice")
         voice_key = f"voice_{pid}_{scenario_id}_{turns}"
         audio_file = st.audio_input("Record your voice", key=voice_key, label_visibility="collapsed")
         if audio_file is not None:
-            with st.spinner("🎙️ Transcribing..."):
+            with st.spinner("Transcribing..."):
                 transcript = transcribe_audio(audio_file.getvalue())
             if transcript:
-                st.info(f"🎙️ You said: *{transcript}*")
+                st.info(f"You said: {transcript}")
                 handle_user_message(transcript, msgs, hints, mkey, hkey, system_prompt, voice_on)
             else:
-                st.warning("Could not transcribe — check your OpenAI API key.")
-        st.markdown("#### ✍️ Or type your message")
+                st.warning("Could not transcribe - check your OpenAI API key.")
+        st.markdown("#### Or type your message")
         if prompt := st.chat_input("Type your message to the sponsor..."):
             handle_user_message(prompt, msgs, hints, mkey, hkey, system_prompt, voice_on)
     turns = sum(1 for m in msgs if m["role"]=="user")
     if turns>=3 and not st.session_state[scored_key]:
         st.markdown("---")
-        with st.expander("ℹ️ How is my score calculated?"):
-            st.markdown("""
-An AI evaluator reads your **full meeting transcript** and scores four dimensions, each out of 25 points:
-
-| Dimension | What it measures |
-|---|---|
-| 📋 **Preparation** | Research, agenda, informed questions |
-| 🗣️ **Communication** | Clear, concise, professional responses |
-| 🧭 **Meeting Management** | Strong open, structure, concrete next steps |
-| 🤝 **Relationship Building** | Active listening, rapport, empathy |
-
-Score **80+** to be certified meeting-ready.
-""")
-        if st.button("🏁 End Meeting & Get Score",type="primary",use_container_width=True):
+        if st.button("End Meeting and Get Score",type="primary",use_container_width=True):
             with st.spinner("Evaluating your performance..."):
                 res = do_score(msgs,p["name"])
             if res:
@@ -394,15 +654,14 @@ Score **80+** to be certified meeting-ready.
         res = st.session_state[result_key]
         total = res["total"]
         st.markdown("---")
-        st.markdown("## 🏆 Your Results")
+        st.markdown("## Your Results")
         color = "green" if total>=80 else "orange" if total>=60 else "red"
         st.markdown(f"### Score: :{color}[{total}/100]")
-        st.caption("Your score = Preparation + Communication + Meeting Management + Relationship Building (25 pts each). 80+ = certified meeting-ready.")
         st.progress(total/100)
-        if total>=80: st.success("✅ CERTIFIED — You are ready for your real sponsor meeting!")
-        elif total>=60: st.warning("⚠️ Almost there — keep practicing.")
-        else: st.error("❌ Keep practicing — focus on improvements below.")
-        if res.get("top_tip"): st.markdown(f"### 🎯 Top Priority: *{res['top_tip']}*")
+        if total>=80: st.success("CERTIFIED — You are ready for your real sponsor meeting!")
+        elif total>=60: st.warning("Almost there — keep practicing.")
+        else: st.error("Keep practicing — focus on improvements below.")
+        if res.get("top_tip"): st.markdown(f"### Top Priority: {res['top_tip']}")
         st.markdown("---")
         c1,c2,c3,c4 = st.columns(4)
         c1.metric("Preparation",f"{res['preparation']}/25")
@@ -414,29 +673,29 @@ Score **80+** to be certified meeting-ready.
             combined = round((total+body)/2)
             color2 = "green" if combined>=80 else "orange" if combined>=60 else "red"
             st.markdown("---")
-            st.markdown(f"### 🎯 Combined Score: :{color2}[{combined}/100]")
+            st.markdown(f"### Combined Score: :{color2}[{combined}/100]")
             c1,c2 = st.columns(2)
             c1.metric("Content Score",f"{total}/100")
             c2.metric("Body Language",f"{body}/100")
         cl,cr = st.columns(2)
         with cl:
-            st.markdown("#### ✅ Strengths")
+            st.markdown("#### Strengths")
             for s in res.get("strengths",[]): st.success(s)
         with cr:
-            st.markdown("#### ⚠️ Improve")
-            for i in res.get("improvements",[]): st.warning(i)
+            st.markdown("#### Improve")
+            for imp in res.get("improvements",[]): st.warning(imp)
         if res.get("missed_opportunities"):
-            st.markdown("#### ❌ Missed")
+            st.markdown("#### Missed")
             for m in res["missed_opportunities"]: st.error(m)
         st.info(res.get("summary",""))
-        if st.button("🔄 Practice Again",use_container_width=True):
+        if st.button("Practice Again",use_container_width=True):
             st.session_state[mkey]=[]; st.session_state[hkey]=[]
             st.session_state[scored_key]=False; st.session_state[result_key]=None
             st.rerun()
 
 # ── PROGRESS ─────────────────────────────────────
 elif page == "📈 My Progress":
-    st.markdown('<div class="hero-title" style="font-size:2rem;">📈 My Progress</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-title" style="font-size:2rem;">My Progress</div>', unsafe_allow_html=True)
     st.markdown("---")
     history = st.session_state.get("history",[])
     video_history = st.session_state.get("video_history",[])
@@ -452,12 +711,12 @@ elif page == "📈 My Progress":
             c3.metric("Average",f"{avg}/100")
             c4.metric("Certified",sum(1 for h in history if h["readiness"]=="Ready"))
             st.markdown("---")
-            st.markdown("### 🎯 Readiness Tracker")
+            st.markdown("### Readiness Tracker")
             st.progress(min(best/80,1.0))
-            if best>=80: st.success("✅ CERTIFIED — Ready for your real sponsor meeting!")
+            if best>=80: st.success("CERTIFIED — Ready for your real sponsor meeting!")
             else: st.warning(f"Need {80-best} more points to get certified. Best: {best}/100")
             st.markdown("---")
-            st.markdown("### 📋 Session History")
+            st.markdown("### Session History")
             for i,h in enumerate(reversed(history),1):
                 with st.container(border=True):
                     c1,c2,c3,c4 = st.columns([2,2,2,2])
@@ -468,40 +727,50 @@ elif page == "📈 My Progress":
                     c4.markdown(f":{color}[{h['readiness']}]")
         if video_history:
             st.markdown("---")
-            st.markdown("### 📹 Video Analysis History")
+            st.markdown("### Video Analysis History")
             for v in reversed(video_history):
                 with st.container(border=True):
                     c1,c2,c3,c4,c5 = st.columns([2,1,1,1,1])
                     c1.write(f"**{v['timestamp']}**")
                     c2.metric("Total",f"{v['score']}/100")
-                    c3.metric("👁️",f"{v.get('eye_contact',0)}/25")
-                    c4.metric("💪",f"{v.get('confidence',0)}/25")
-                    c5.metric("🎯",f"{v.get('engagement',0)}/25")
+                    c3.metric("Eye",f"{v.get('eye_contact',0)}/25")
+                    c4.metric("Conf",f"{v.get('confidence',0)}/25")
+                    c5.metric("Eng",f"{v.get('engagement',0)}/25")
                     st.caption(v.get("summary",""))
     if history or video_history:
         st.markdown("---")
-        export = {"history":history,"video_history":video_history,"best_score":st.session_state.get("best_score",0)}
-        st.download_button("⬇️ Export My Progress (JSON)",data=json.dumps(export,indent=2),file_name="capstone_coach_progress.json",mime="application/json",use_container_width=True)
-        st.caption("⚠️ Session data resets when you refresh the page — export it if you want to keep it.")
+        export = {
+            "history": history,
+            "video_history": video_history,
+            "best_score": st.session_state.get("best_score",0),
+        }
+        st.download_button(
+            "Export My Progress (JSON)",
+            data=json.dumps(export, indent=2),
+            file_name="capstone_coach_progress.json",
+            mime="application/json",
+            use_container_width=True,
+        )
+        st.caption("Session data resets when you refresh — export it to keep it.")
 
 # ── ABOUT ─────────────────────────────────────────
 elif page == "ℹ️ About":
-    st.markdown('<div class="hero-title" style="font-size:2rem;">🎓 About Capstone Coach</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-title" style="font-size:2rem;">About Capstone Coach</div>', unsafe_allow_html=True)
     st.markdown("---")
     st.markdown("""
-## 🎓 Capstone Coach
+## Capstone Coach
 AI-powered sponsor meeting simulator for UChicago ADS Capstone students.
 
 ### Features
-- 🗂️ Meeting scenario picker — Initial Meeting, Scope, Data, Progress Summary
-- 💬 Text chat with 5 AI sponsor personas
-- 🎙️ Voice input — speak to your sponsor
-- 🔊 Sponsor speaks back with OpenAI TTS
-- 📹 Auto-snapshot video analysis — snapshots captured every 10s during recording, averaged by Claude Vision
-- 💡 Live coaching hints after every message
-- 📊 Combined content + body language score
-- 👥 Group Practice Call
-- 🏆 Get certified meeting-ready at 80+
+- Meeting scenario picker — Initial Meeting, Scope, Data, Progress Summary
+- Text chat with 5 AI sponsor personas
+- Voice input — speak to your sponsor
+- Sponsor speaks back with OpenAI TTS
+- Auto-snapshot video analysis — snapshots captured every 10 seconds during recording, averaged by Claude Vision
+- Live coaching hints after every message
+- Combined content and body language score
+- Group Practice Call
+- Get certified meeting-ready at 80+
 
 ### Tech Stack
 Streamlit · Claude API · OpenAI Whisper · OpenAI TTS · Claude Vision
@@ -509,4 +778,3 @@ Streamlit · Claude API · OpenAI Whisper · OpenAI TTS · Claude Vision
 ### Built For
 UChicago Master of Applied Data Science — Capstone Program
 """)
-
