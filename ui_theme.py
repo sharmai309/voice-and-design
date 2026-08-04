@@ -53,6 +53,10 @@ header [data-testid="stExpandSidebarButton"] svg { fill: #ffffff !important; col
 [data-testid="stBaseButton-secondary"] { color: #ffffff !important; }
 [data-testid="stBaseButton-secondary"] * { color: #ffffff !important; }
 [data-testid="stBaseButton-primary"] { color: #ffffff !important; }
+[data-testid="stBaseButton-primary"] p { color: #ffffff !important; }
+[data-testid="stBaseButton-primary"] span { color: #ffffff !important; }
+button[data-testid="stBaseButton-primary"] { color: #ffffff !important; }
+button[data-testid="stBaseButton-primary"] * { color: #ffffff !important; }
 [data-testid="stBaseButton-primary"] * { color: #ffffff !important; }
 .st-key-cta_banner .cta-card { background: linear-gradient(135deg, #7A1F2E, #B3273A); border-radius: 20px 20px 0 0; padding: 36px 40px 18px; text-align: center; color: #ffffff; }
 .st-key-cta_banner div[data-testid="stVerticalBlock"] { gap: 0 !important; }
@@ -102,3 +106,4 @@ def sidebar_brand():
   <div style="font-size:0.75rem;color:#9CA3AF;">Sponsor Meeting Simulator</div>
 </div>
 """, unsafe_allow_html=True)
+
