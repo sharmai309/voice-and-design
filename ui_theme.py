@@ -1,4 +1,3 @@
-
 """
 ui_theme.py
 Shared design system for Capstone Coach.
@@ -125,6 +124,8 @@ header [data-testid="stExpandSidebarButton"] svg { fill: #ffffff !important; col
 /* ---------- Force readable dark text on results/report content ----------
    Fixes washed-out text on the Video Practice results page (yellow
    st.warning boxes, Tips markdown, section headings, metric numbers).
+   Targets section[data-testid="stMain"] — the current Streamlit main
+   content container — plus the legacy .main class for older versions.
    Deliberately does NOT touch the sidebar, which needs white text. */
 div[data-testid="stAlert"],
 div[data-testid="stAlert"] p,
@@ -135,14 +136,28 @@ div[data-testid="stAlert"] * {
   opacity: 1 !important;
 }
 
-/* Markdown headings and body text in the main content area */
-[data-testid="stAppViewContainer"] .main h1,
-[data-testid="stAppViewContainer"] .main h2,
-[data-testid="stAppViewContainer"] .main h3,
-[data-testid="stAppViewContainer"] .main h4,
-[data-testid="stAppViewContainer"] .main p,
-[data-testid="stAppViewContainer"] .main li,
-[data-testid="stAppViewContainer"] .main strong {
+/* Markdown headings and body text in the main content area (not sidebar).
+   Covers both the modern stMain testid and the legacy .main class. */
+section[data-testid="stMain"] h1,
+section[data-testid="stMain"] h2,
+section[data-testid="stMain"] h3,
+section[data-testid="stMain"] h4,
+section[data-testid="stMain"] h5,
+section[data-testid="stMain"] h6,
+section[data-testid="stMain"] p,
+section[data-testid="stMain"] li,
+section[data-testid="stMain"] strong,
+section[data-testid="stMain"] em,
+section.main h1,
+section.main h2,
+section.main h3,
+section.main h4,
+section.main h5,
+section.main h6,
+section.main p,
+section.main li,
+section.main strong,
+section.main em {
   color: #111827 !important;
   opacity: 1 !important;
 }
